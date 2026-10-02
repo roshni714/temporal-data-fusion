@@ -1,0 +1,13 @@
+\begin{thebibliography}{1}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Sahoo et~al.(2022)Sahoo, Lei, and Wager]{sahoo2022learning}
+Roshni Sahoo, Lihua Lei, and Stefan Wager.
+\newblock Learning from a biased sample.
+\newblock \emph{arXiv preprint arXiv:2209.01754}, 2022.
+
+\end{thebibliography}

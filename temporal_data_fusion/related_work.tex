@@ -1,0 +1,94 @@
+\documentclass{article}
+
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{natbib}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{fancyvrb}
+\usepackage{enumerate}
+\usepackage{relsize}
+\usepackage{multirow}
+\usepackage{mathrsfs}
+
+\usepackage{hyperref}
+\usepackage[margin=1.4in]{geometry}
+\hypersetup{colorlinks,citecolor=blue,urlcolor=blue,linkcolor=blue}
+\newcommand{\Lihua}[1]{{\color{blue}#1}}
+
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+
+\usepackage{stefan_tex}
+\graphicspath{{./figures/}}
+
+%\numberwithin{equation}{section}
+
+%%%%%%%%% Theorems
+
+\theoremstyle{definition}
+\newtheorem{exam}{Example}
+\newtheorem{defi}{Definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{property}{Property}
+
+ \theoremstyle{plain}
+ \newtheorem{prop}{Proposition}
+ \newtheorem{conj}[prop]{Conjecture}
+ \newtheorem{coro}[prop]{Corollary}
+ \newtheorem{lemm}[prop]{Lemma}
+ \newtheorem{theo}[prop]{Theorem}
+%\theoremstyle{plain}
+%\newtheorem{prop}{Proposition}[section]
+%\newtheorem{coro}{Corollary}[section]
+%\newtheorem{lemm}{Lemma}[section]
+%\newtheorem{theo}{Theorem}[section]
+
+\theoremstyle{remark}
+\newtheorem{comm}{Comment}
+\newtheorem{rema}{Remark}
+
+\author{Roshni Sahoo\\
+  \texttt{r.sahoo@columbia.edu}}
+
+
+\title{Related Work Data Fusion}
+
+\date{Columbia University}
+
+
+\begin{document}
+
+\maketitle
+
+\begin{section}{Regression Models and Life Tables}
+We consider a population of individuals; for each individual, we observe either the time to ``failure'' or the time to ``loss'' or censoring. For censored individuals, we know only that the time to failure is greater than the censoring time.
+
+Let $T$ be a random variable representing failure time. Let $F(t) = \PP[]{T \geq t}$. Let $\lambda(t)$ be the hazard, or age-spepcific failure rate, i.e. 
+\[\lambda(t) = \lim_{\Delta \rightarrow 0^{+}} \frac{\PP[]{t \leq T \leq t + \Delta \mid T \geq t}}{\Delta}.\]
+The probability that failure happens at time $t$, given that it has not yet occured. If $T$ is discrete, then 
+\[ \lambda(t) = \sum \lambda_{u_{j}} \delta(t - u_{j}),\]
+where $\lambda_{t} = \PP[]{T=t \mid T \geq t}$.
+
+Let $n$ individuals be observed to failure and the rest be censored. The only information about the failure time of a censored individual is that it exceeds the censoring time. The failure times are given by 
+\[ t_{(1)} < t_{(2)} < \dots < t_{(n)}.\]
+Let $m_{(i)}$ be the number of units with failure time equal to $t_{(i)}$. The risk set $\mathcal{R}(t)$ is the set of individuals at risk at time $t$. Let $r_{(i)}$ be the number of such individuals for $t=t_{(i)}$. The product limit estimate of the distribution is obtained by taking estimated conditional probabilities that agree with the observed distributional frequencies:
+\[ \hat{\lambda}(t) = \sum_{i=1}^{k} \frac{m_{(i)}}{r_{(i)}} \cdot \delta(t - t_{(i)}).\]
+MLE estimate in the family of all possible distributions.
+
+Suppose we also observe measurements $x$ (covariates) for each unit in addition to failure time. Goal is to assess relationship between failure times and $x$. Posit a model where the hazard is 
+\[ \lambda(t; x) = \exp(z_{(i)} \beta) \cdot \lambda_{0}(t).\]
+The probability of failure at time $t_{(i)}$ is given by
+\[ \exp(z_{(i)} \beta) \Big/ \sum_{l \in \mathcal{R}(t_{(i)})} \exp(z_{(l)} \beta).\]
+
+
+Our stationarity assumption implies that time-dependent factors have only a multiplicative impact on the probability of response.
+
+\end{section}
+
+\end{document}

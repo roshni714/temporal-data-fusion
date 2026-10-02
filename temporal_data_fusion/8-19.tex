@@ -1,0 +1,137 @@
+\documentclass{article}
+
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{natbib}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{fancyvrb}
+\usepackage{enumerate}
+\usepackage{relsize}
+\usepackage{multirow}
+
+\usepackage{hyperref}
+\usepackage[margin=1.4in]{geometry}
+\hypersetup{colorlinks,citecolor=blue,urlcolor=blue,linkcolor=blue}
+\newcommand{\Lihua}[1]{{\color{blue}#1}}
+
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+
+\usepackage{stefan_tex}
+\graphicspath{{./figures/}}
+
+%\numberwithin{equation}{section}
+
+%%%%%%%%% Theorems
+
+\theoremstyle{definition}
+\newtheorem{exam}{Example}
+\newtheorem{defi}{Definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{property}{Property}
+
+ \theoremstyle{plain}
+ \newtheorem{prop}{Proposition}
+ \newtheorem{conj}[prop]{Conjecture}
+ \newtheorem{coro}[prop]{Corollary}
+ \newtheorem{lemm}[prop]{Lemma}
+ \newtheorem{theo}[prop]{Theorem}
+% \theoremstyle{plain}
+% \newtheorem{prop}{Proposition}[section]
+% \newtheorem{coro}{Corollary}[section]
+% \newtheorem{lemm}{Lemma}[section]
+% \newtheorem{theo}{Theorem}[section]
+
+\theoremstyle{remark}
+\newtheorem{comm}{Comment}
+\newtheorem{rema}{Remark}
+
+\author{Roshni Sahoo\\
+  \texttt{r.sahoo@columbia.edu}
+  }
+
+
+\title{Disease Surge Forecasting}
+
+\date{Columbia University}
+
+\begin{document}
+\maketitle
+
+\begin{section}{Related Work}
+
+\begin{subsection}{Probabilistic seasonal dengue forecasting in Vietnam: A modelling study using superensembles}
+\citet{colon2021probabilistic}
+
+\begin{enumerate}
+  \item Dengue control measures are reactive, meaning they take place after cases have occurred. Vector control, dengue diagnosis, reporting all suffer delays which vary across time and space. Hinders timely generation and communication of information on when and where transimission occurs. If accurate predictions are available, public health decision makers and planners could design, implement, and target interventions to the most at-risk places in a timely fashion.
+  \item Challenges with implementing operationa and substainable early warning systems - lack of multi-decadal health data sets to train the early warning systems, mismatch of scales between climate data outputs and data used for decision making, lack of consensus with how to communicate uncertainties to users.
+  \item Public health decision makers will take action if forecast exceeds a certain value, i.e. $\PP[Q_{t}]{Y \geq a}.$
+\end{enumerate}
+
+\end{subsection}
+
+\begin{subsection}{A district-level ensemble model to enhance dengue prediction and control for the Mekong Delta Region of Vietnam}
+\citet{draidi2025district}
+
+\begin{enumerate}
+  \item Interventions for dengue are often reactive - implemented only after cases have been reported, which could be too late to preemptively reduce the impact of dengue outbreaks.
+  \item Limitation of previous work is that predictions were made at the provincial level -- largest geographic, administrative unit. In reality, prevention and control measures are implemented at the district level, making it necessarily to provide district-level predictions.
+  \item Goal: forecast dengue incidence 1-3 months in advance at the district level.
+  \item Used both ERA5-Land data and ground-based in situ weather stations for weather data - aggregated daily time series into average monthly values, rainfall was aggregated into cumulative monthly values. Found that both sources yielded similar results, just report results using ERA5
+\end{enumerate}
+
+\end{subsection}
+
+\begin{subsection}{Prediction of High Incidence of Dengue in the Philippines}
+
+\begin{enumerate}
+  \item Discusses that the threshold between low and high incidence needs to be determined before the rules are extracted from the data and classifiers performing predictions are built. The threshold is typically specified in an adhoc way, based on the context and disease. Costs of false positive and false negatives - alarm fatigue if the threshold is too low and may waste resources in which accurate prediction of an outbreak is more likely, if the threshold is too high may not allocate resources when they are needed.
+  \item One thing to be aware of - number of cases appear to be incresing but this could be because cases were previously under-reported or becasue disease reporting was improved due to the addition of funding and other resources.
+\end{enumerate}
+
+\end{subsection}
+
+\begin{subsection}{Spatial Resource Allocation for Emerging Epidemics: A Comparison of Greedy, Myopic, and Dynamic Policies}
+
+\begin{enumerate}
+  \item Emerging infectious disease outbreaks - demonstrate the need for rapid coordinated response efforts to mitigate epidemic spread.
+  \item Targeted response needed due to large heterogeneity in where cases occur. 
+  \item Existing models do not incorporate behavioral changes in response to epidemic's growth - resulting in overestimation of new cases.
+  \item Incorporate time-dependent change in behavior - people adapt to epidemic, surveying over time.
+  \item Resource allocation policies for epidemic control can be forward looking - by anticipating where future cases will likely occur and proactively distributing resources there, or backward looking - by assign ing resources to places hit the hardest by the outbreak.
+\end{enumerate}
+
+\end{subsection}
+
+
+\end{section}
+
+\begin{section}{Questions}
+
+\begin{enumerate}
+\item There are many, many papers that consider forecasting disease case counts in lower and middle income countries using climate data. Most of these works focus on a forecasting problem, similar to the one that we have been discussing. Despite the vast literature on predicting disease outbreaks, these works do not focus on the practical question of how to translate the predictive information into action. For example, instead of asking ``What is the expected prevalence $Y$ of the disease in each woreda $z$ at time $t$?,'' our learning algorithm could directly target the question ``How many resources $R$ should woreda $z$ receive at time $t$?'' This would require some discussion of the potential policy interventions and (simple) modeling of the impact of a particular policy intervention. Clearly, the policy maker has limited resources. There are key tradeoffs between 
+\begin{enumerate}
+  \item acting early, when there is larger uncertainty of the nature of the outbreak but policy interventions are potentially more effective vs. acting later, when there is less uncertainty of the nature of the outbreak but policy interventions are less effective
+  \item where to act - which woredas need resources.
+\end{enumerate}
+\item  Related to this question, what kinds of actions are decision makers aiming to take based on our predictions? I could imagine that there are many questions - first of all which woredas to prioritize, how many resources to send to each place etc. It might be worth developing a framework for addressing the decision problem directly.
+\item Many papers disease surge forecasting aim to predict disease prevalence at a time that is 1-3 months in the future to provide decision makers more time to take proactive action. From our discussions, it seems like we are planning to generate forecasts with a much smaller lead time (1 -2 week horizon). Is this the appropriate lead time?
+\item Important for us to understand so we can interpret the disease surveillance data: Were there any government interventions implemented in previous years that would affect the number of cases? When did these occur?
+\item Do people change their behavior over the course of disease outbreak? For example, are there any behavioral adaptations that people might use to prevent disease transmission and thus lower the number of cases.
+\end{enumerate}
+
+\end{section}
+
+
+\bibliographystyle{plainnat} 
+\bibliography{ref.bib}
+
+
+\end{document}

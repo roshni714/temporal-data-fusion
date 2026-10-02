@@ -1,0 +1,148 @@
+\documentclass{article}
+
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{natbib}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{fancyvrb}
+\usepackage{enumerate}
+\usepackage{relsize}
+\usepackage{multirow}
+
+\usepackage{hyperref}
+\usepackage[margin=1.4in]{geometry}
+\hypersetup{colorlinks,citecolor=blue,urlcolor=blue,linkcolor=blue}
+\newcommand{\Lihua}[1]{{\color{blue}#1}}
+
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+
+\usepackage{stefan_tex}
+\graphicspath{{./figures/}}
+
+%\numberwithin{equation}{section}
+
+%%%%%%%%% Theorems
+
+\theoremstyle{definition}
+\newtheorem{exam}{Example}
+\newtheorem{defi}{Definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{property}{Property}
+
+ \theoremstyle{plain}
+ \newtheorem{prop}{Proposition}
+ \newtheorem{conj}[prop]{Conjecture}
+ \newtheorem{coro}[prop]{Corollary}
+ \newtheorem{lemm}[prop]{Lemma}
+ \newtheorem{theo}[prop]{Theorem}
+% \theoremstyle{plain}
+% \newtheorem{prop}{Proposition}[section]
+% \newtheorem{coro}{Corollary}[section]
+% \newtheorem{lemm}{Lemma}[section]
+% \newtheorem{theo}{Theorem}[section]
+
+\theoremstyle{remark}
+\newtheorem{comm}{Comment}
+\newtheorem{rema}{Remark}
+
+\author{Roshni Sahoo\\
+  \texttt{r.sahoo@columbia.edu}
+  }
+
+
+\title{Learning under Delayed Outcomes}
+
+\date{Columbia University}
+
+\begin{document}
+\maketitle
+
+\begin{section}{Introduction}
+
+In many settings, decision makers experience a delay before observing true outcomes. This can pose a challenge when real-time decision making is needed. Nevertheless, the decision maker may be able to observe a proxies for the outcome 
+
+\begin{enumerate}
+  \item In the case of disease forecasting, call volume of national medical hotline can be observed at time $t$ but the true number of cases at time $t$ cannot be observed.
+\end{enumerate}
+
+How to learn from this information? We cannot expect the distribution over outcomes $Y$ to be fixed over time. 
+
+% The distribution of the conditional distribution of the outcome given the proxy may change over time.
+
+
+% Idea: We can use retrospectively use paired data sources that capture the proxy outcome and the long term outcome to estimate the relationship between the outcomes. Then we can apply the extrapolated relationship to current data.
+
+\end{section}
+
+\begin{section}{Statistical Setting}
+Let $t=1, 2, \dots T$ denote time-steps and $i=1, 2, \dots n$ denote units. For each time-step $t$, there exists a joint distribution $Q_{t}$ over a proxy outcome $Z \in \mathcal{Z}$ and a true outcome $Y \in \mathcal{Y}$. We observe $Q_{t}$ for $t=1, 2, \dots m$. However, for time-steps $t > m$, we only observe $Q_{t, Y \mid Z \in \mathcal{A}}$, where $\mathcal{A} \subset \mathcal{Z}$.
+
+We posit that the distribution over outcomes $Q_{t, Y}$ may evolve over time. Since $Q_{t, Y}$ evolves over time, we must also assume that the distribution of $Y \mid Z$ is fixed because there must exist some proxy variables $z$ for which the conditional distribution of $Y \mid Z=z$ changes. Furthermore, we note that the distribution of $Z \mid Y$ may also change over time. At small time-steps $t$, the fraction of disease-related calls a call center receives may be high at all disease levels but at later time-steps $t$, the fraction of disease-related calls a call center receives may be much lower at all disease levels. 
+
+Nevertheless, a plausible assumption is that the relative probability of observing call fraction $z$ given disease prevalence $y$ and $y'$ is fixed over time. Denote the relative probability of observing call fraction $z$ as follows
+\[ w(y, y', z; t) = \frac{dQ_{t}(Z=z \mid Y=y)}{dQ_{t}(Z=z \mid Y=y')}.\]
+
+\begin{assumption}
+\label{assumption:stationarity}
+The function $w(y, y', z; t)$ is constant in $t$.
+\end{assumption}
+
+This assumption implies the following factorization $dQ_{t}(z \mid y) = w(y, z) \cdot \lambda(z, t)$. The following result shows how we can estimate $w$ by pooling data from all time periods.
+
+Since $dQ_{t}(z \mid y) = w(y, z) \cdot \lambda(z, t)$, we also have that $\frac{dQ_{t}(z \mid y)}{dQ_{t}(z)} = w(y, z) \cdot \tilde{\lambda}(z, t).$ We note that the left side corresponds to the density ratio between the joint distribution $Q_{t}$ over $(Z, Y)$ and the product of the marginal distribution $dQ_{t}(y) \cdot dQ_{t}(z).$
+\[ \frac{dQ_{t}(z \mid y)}{dQ_{t}(z)}  = \frac{dQ_{t}(z, y)}{dQ_{t, Z}(z) \cdot dQ_{t, Y}(y)}.\]
+
+Thus, the density ratio between the joint distribution and the product of the marginal distributions can be expressed as 
+\[  \frac{dQ_{t}(z, y)}{dQ_{t}(z) \cdot dQ_{t}(y)} =  w(y, z) \cdot \tilde{\lambda}(z, t).\]
+
+This yields a simple algorithm for estimating $w$. First, we construct a pooled data distribution $F$ over $(T, Y, Z, R)$, where $R \sim \text{Bernoulli}(1/2)$, $T \sim \text{Uniform}([m]),$ $F_{Y, Z |T =t,R=1} = Q_{t}$, and $F_{Y, Z |T =t,R=0} = Q_{t, Y} \cdot Q_{t, Z}$. Then we propose to solve
+
+\begin{theo}
+Suppose Assumption \ref{assumption:stationarity} holds. Define a loss function 
+\[ L(r, a, z) := \log(1 + \exp(r + a)) - z \cdot (r + a).\]
+Then $w(y, z) := \exp(h^{*}(y, z))$, where $h^{*}$ is the solution to the following augmented convex minimization problem 
+\[ \{h^{*}(\cdot), \alpha^{*}(\cdot)\} \in \arg \min_{(h, \alpha) \in \mathcal{H} \times \mathcal{A}} \{ \EE[F]{L(h(Z, Y), \alpha(Z, T), R)} : \EE[F]{\alpha(Z, T)} = 0 \}.\]
+\end{theo}
+
+% dQ_{t}(z \mid y) &= \frac{dQ_{t}(z, y)}{dQ_{t}(y) \cdot dQ_{t}(z)} \cdot dQ_{t}(z).
+% \end{align*}
+% Taking the log of both sides, we have that
+% \begin{align*}
+% \log dQ_{t}(z \mid y) &= \log \Big( \frac{dQ_{t}(z, y)}{dQ_{t}(y) \cdot dQ_{t}(z)} \Big) + \log dQ_{t}(z) \\
+% \end{align*}
+
+
+
+\end{section}
+
+\begin{section}{References}
+
+\begin{subsection}{Detecting and Correcting for Label Shift with Black Box Predictors}
+\cite{lipton2018detecting}
+
+Key assumption is that $dP(z \mid y) = dQ(z \mid y)$ but $dP(y) = dQ(y)$ can change. They have training data $(X, Y) \sim P$, a model $\hat{Y} = f(X)$, and unlabeled target data $X \sim Q$. They are able to estimate $dQ(y) / dP(y)$ as follows:
+
+\begin{align*}
+\PP[Q]{\hat{Y} = i} &= \sum_{j} \PP[Q]{\hat{Y} = i \mid Y = j } \cdot \PP[Q]{Y = j} \\ 
+&= \sum_{j} \PP[P]{\hat{Y} = i, Y= j} \cdot \frac{\PP[Q]{Y = j}}{\PP[P]{Y = j}} \\
+&= \sum_{j} \PP[P]{\hat{Y} = i, Y = j} \cdot w(Y = j).
+\end{align*}
+
+They assume that the confusion matrix is invertible.
+
+\end{subsection}
+
+
+\end{section}
+
+\bibliographystyle{plainnat} 
+\bibliography{ref.bib}
+
+\end{document}

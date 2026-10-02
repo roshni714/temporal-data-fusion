@@ -1,0 +1,28 @@
+\begin{thebibliography}{2}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Col{\'o}n-Gonz{\'a}lez et~al.(2021)Col{\'o}n-Gonz{\'a}lez,
+  Soares~Bastos, Hofmann, Hopkin, Harpham, Crocker, Amato, Ferrario, Moschini,
+  James, et~al.]{colon2021probabilistic}
+Felipe~J Col{\'o}n-Gonz{\'a}lez, Leonardo Soares~Bastos, Barbara Hofmann,
+  Alison Hopkin, Quillon Harpham, Tom Crocker, Rosanna Amato, Iacopo Ferrario,
+  Francesca Moschini, Samuel James, et~al.
+\newblock Probabilistic seasonal dengue forecasting in vietnam: A modelling
+  study using superensembles.
+\newblock \emph{PLoS medicine}, 18\penalty0 (3):\penalty0 e1003542, 2021.
+
+\bibitem[Draidi~Areed et~al.(2025)Draidi~Areed, Nguyen, Quoc~Do, Nguyen, Bui,
+  Nelson, Warren, Doan, Sinh, Osborne, et~al.]{draidi2025district}
+Wala Draidi~Areed, Thi Thanh~Thao Nguyen, Kien Quoc~Do, Thinh Nguyen, Vinh Bui,
+  Elisabeth Nelson, Joshua~L Warren, Quang-Van Doan, Nam~Vu Sinh, Nicholas~John
+  Osborne, et~al.
+\newblock A district-level ensemble model to enhance dengue prediction and
+  control for the mekong delta region of vietnam.
+\newblock \emph{PLoS neglected tropical diseases}, 19\penalty0 (9):\penalty0
+  e0013571, 2025.
+
+\end{thebibliography}

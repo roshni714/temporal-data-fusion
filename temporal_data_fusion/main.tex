@@ -1,0 +1,447 @@
+\documentclass{article}
+
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{natbib}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{fancyvrb}
+\usepackage{enumerate}
+\usepackage{relsize}
+\usepackage{multirow}
+\usepackage{mathrsfs}
+
+\usepackage{hyperref}
+\usepackage[margin=1.4in]{geometry}
+\hypersetup{colorlinks,citecolor=blue,urlcolor=blue,linkcolor=blue}
+\newcommand{\Lihua}[1]{{\color{blue}#1}}
+
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+
+\usepackage{stefan_tex}
+\graphicspath{{./figures/}}
+
+%\numberwithin{equation}{section}
+
+%%%%%%%%% Theorems
+
+\theoremstyle{definition}
+\newtheorem{exam}{Example}
+\newtheorem{defi}{Definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{property}{Property}
+
+ \theoremstyle{plain}
+ \newtheorem{prop}{Proposition}
+ \newtheorem{conj}[prop]{Conjecture}
+ \newtheorem{coro}[prop]{Corollary}
+ \newtheorem{lemm}[prop]{Lemma}
+ \newtheorem{theo}[prop]{Theorem}
+%\theoremstyle{plain}
+%\newtheorem{prop}{Proposition}[section]
+%\newtheorem{coro}{Corollary}[section]
+%\newtheorem{lemm}{Lemma}[section]
+%\newtheorem{theo}{Theorem}[section]
+
+\theoremstyle{remark}
+\newtheorem{comm}{Comment}
+\newtheorem{rema}{Remark}
+
+\author{Roshni Sahoo\\
+  \texttt{r.sahoo@columbia.edu}}
+
+
+\title{Data Fusion for Nowcasting}
+
+\date{Columbia University}
+
+
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Decision makers require real-time estimates of outcomes in a target population. We study real-time outcome estimation given representative but lagged data from target population and real-time but potentially biased data drawn from a survey population that differs from the target population. When the selection mechanism into the survey population is stationary, we demonstrate that the real-time mean outcome in the target population can be expressed as a time-invariant reweighting of the survey data. The weights are identified as the solution to an augmented convex optimization problem on data pooled from the target and survey populations across time.
+\end{abstract}
+
+% Modern nowcasting methods are the predominant approach for real-time outcome estimation given lagged but representative data from the target population. However, these methods can incur substantial bias in nonstationary environments, where the data distribution of the target population can evolve over time. Nevertheless, in many settings, practitioners additionally have access to lagged and current data drawn from a survey population that is potentially biased relative to the target population.
+
+
+%Questions to answer: what is the drawback of nowcasting / forecasting from the target distribution in this setting?
+
+%What's the problem?
+% Decision makers require real-time estimates of outcomes in a target population.
+
+% Why is hard?
+% In many settings, there may be a lag between 
+% \rs{why is getting real-time estimates of health outcomes particularly hard? answer: data collection takes a long time. why does data collection take a long time? why do decision makers only have access to lagged outcomes?}
+
+% The predominant approach to obtaining such outcomes entails forecasting their value from outcomes collected from the target population in previous time periods. The limitation of this approach is that outcomes can evolve over time, so the lagged data may not fully capture current trends. Nevertheless, decision makers often have access to additional real-time information that is drawn from a population that is potentially biased relative to the target population. In this work, we provide a framework for combining potentially biased, real-time data with unbiased, lagged data for forecasting.
+
+% \begin{exam}
+% Online and offline surveys. Online surveys permit rapid data collection, but we may be concerned that online surveys suffer from sampling bias \citep{bradley2021unrepresentative,kessler2022changes}. In contrast, offline surveys are representative relative to a target population but they cannot be deployed instantaneously.
+% \end{exam}
+
+
+% \begin{exam}
+% Syndromic surveillance?
+% \end{exam}
+
+
+\begin{section}{Stationary Sampling Bias}
+Let $P_{t}, Q_{t}$ denote the survey and target population distributions respectively at time-step $t.$ Let $Q_{t}$ be a distribution over an outcome $Y \in \mathcal{Y}$ and a binary response indicator $R \in \{0, 1\}.$ Let $P_{t}$ be the $Y \mid R=1$ marginal of $Q_{t}$. We have access to $P_{t}$ for $t=1, \dots M$ and $Q_{t}$ for $t=1, \dots m$, where $m < M$. Define $\theta(t) := \EE[Q_{t}]{Y}.$
+
+We propose to estimate $\theta(t)$ by leveraging the data from the paired survey and target distributions $P_{t}, Q_{t}$ when $t=1, 2, \dots m$ and the survey distributions $P_{t}$ when $t > m$. We define relative probability of sample selection between two individuals with outcome $y$ and $y'$ at time-step $t$ as 
+\begin{equation} w(y, y'; t) = \frac{\PP[Q_{t}]{R=1 \mid Y=y}}{\PP[Q_{t}]{R=1 \mid Y= y'}}.\end{equation}
+
+We consider learning in the presence of stationary sampling bias. Under stationary sampling bias, the relative probability of sample selection between individuals with different outcomes is constant over time. 
+\begin{assumption}[Stationary Sampling Bias]
+\label{assumption:stationary}
+The function $w(y, y'; t)$ is constant in $t$.
+\end{assumption}
+
+We highlight that under stationary sampling bias, data from multiple time steps can be pooled together to aid in estimating target parameters. As a preliminary building block, we define a pooled distribution $F$ over our available data. Let $T$ be a random variable that denotes the time step and let $Z$ be a pseudolabel that captures whether a sample is drawn from the survey or target population. The distribution $F$ is a distribution over $(T, Z, Y)$, where $Z  \sim \text{Bernoulli}(1/2)$ and $T \sim \text{Uniform}([m])$, $F_{Y \mid T=t, Z=1} = Q_{t}$, and  $F_{Y \mid T=t, Z= 0} = P_{t}$.
+
+We define a function class $\mathcal{H} = L^{2}(F_{Y}, \mathcal{Y})$, the space of square-integrable measurable functions with respect to $F_{Y}$ and a function class $\mathcal{A} = L^{2}(F_{T}, \mathcal{T})$, the space of square-integrable measurable functions with respect to $F_{T}$.
+\begin{theo}
+Suppose Assumption \ref{assumption:stationary} holds. Define a loss function 
+\begin{equation} L(r, a, z) := \log(1 + \exp(r+ a)) - z \cdot (r + a). \end{equation}
+Then, the target population mean at time-step $t \in [M]$ is given by
+\begin{equation}
+\label{eq:ratio_2}
+\theta(t) = \EE[P_{t}]{\exp(h^{*}(Y)) \cdot Y} / \EE[P_{t}]{\exp(h^{*}(Y))},
+\end{equation}
+where $h^{*}$ is the solution to the following augmented convex minimization problem
+\begin{equation} 
+\label{eq:loss_min}
+\{h^{*}(\cdot), \alpha^{*}(\cdot)\} \in \arg\min_{(h, \alpha) \in \mathcal{H} \times \mathcal{A}} \{\EE[F]{L(h(Y), \alpha(T), Z)} : \alpha(T) = 0\}.\end{equation}
+\end{theo}
+
+\rs{why estimate the log density ratio instead of the density ratio? it's because then $r \cdot a$ is nonconvex hard to learn them}
+
+\begin{proof}
+Let $\gamma(y;t) = \PP[Q_{t}]{R=1 \mid Y=y}.$ First, we observe that Bayes rule implies that 
+\begin{align*}
+dQ_{t}(y) &= dP_{t}(y) \cdot \frac{1}{\gamma(y;t)} \cdot \PP[Q_{t}]{R=1}.
+\end{align*}
+In addition, Bayes rule also implies that
+\begin{align*}
+\EE[P_{t}]{\frac{1}{\gamma(Y;t)}} &= \int_{\mathcal{Y}} \frac{\PP[Q_{t}]{Y=y \mid R=1}}{\PP[Q_{t}]{R=1 \mid Y=y}} dy \\
+&= \int \frac{1}{\PP[Q_{t}]{R=1}} \cdot dQ_{t}(y) \\
+&= \frac{1}{\PP[Q_{t}]{R=1}}.
+\end{align*}
+Thus, we have that
+\begin{equation} \label{eq:ratio} \theta(t) = \EE[P_{t}]{\frac{Y}{\gamma(Y;t)}} \Big/ \EE[P_{t}]{\frac{1}{\gamma(Y;t)}}. \end{equation}
+
+As a result, it remains to show that right side of \eqref{eq:ratio} is equal to right side \eqref{eq:ratio_2}. The main insight is that the solution to \eqref{eq:loss_min} is a function 
+\begin{equation} \label{eq:prop_density} \exp(h^{*}(y)) \propto \frac{1}{\gamma(y;t)} \end{equation}
+up to a time-dependent scaling factor.
+
+To characterize the solution to \eqref{eq:loss_min}, we first demonstrate existence and uniqueness of the solution to a simpler unconstrained minimization problem.  Let $\mathcal{S} = L^{2}(F_{Y,T}, \mathcal{Y} \times \mathcal{T})$, the space of square-integrable measurable functions with respect to $F_{Y, T}$. Set $\tilde{L}(s, z) = L(r, a, z)$ for any $(r, a)$ such that $s = r+ a$. Since $L$ is strictly convex in $r + a$, $\tilde{L}$ is strictly convex in $s$. We consider the population risk minimization problem 
+\begin{equation} \label{eq:simple} \min_{s \in \mathcal{S}} \EE[F]{\tilde{L}(s(Y, T), Z)} \end{equation}
+and note that it must have a unique minimizer $s^{*}$. The minimizer $s^{*}$ must satisfy the KKT conditions conditional on $Y=y, T=t$ for every $(y, t).$ The KKT conditions are as follows
+\begin{align*}
+\nabla \EE[F]{L(s(Y, T), Z) \mid Y=y, T=t} &= \frac{\exp(s(y,t))}{ 1 + \exp(s(y,t))} - \PP[F]{Z = 1 \mid Y=y, T=t} = 0.
+\end{align*} 
+Thus, $s^{*}(y, t)$ that solves the KKT conditions is given by
+\begin{align*} 
+s^{*}(y, t) &= \log\Big(\frac{\PP[F]{Z = 1 \mid Y=y, T=t}}{\PP[F]{Z= 0 \mid Y= y, T=t}} \Big) \\
+&= \log \Big( \frac{dQ_{t}(y)}{dP_{t}(y)} \Big).
+\end{align*}
+
+Now, we consider 
+\begin{equation}
+\min_{(h, \alpha) \in \mathcal{H} \times \mathcal{A}} \EE[F]{L(h(Y), \alpha(T), Z)}.
+\end{equation}
+We show that under Assumption \ref{assumption:stationary}, there exists a set of minimizers of the population risk $\EE[F]{L(h(Y), \alpha(T), Z)}$ over the set $\mathcal{H} \times \mathcal{A}$. We consider the set
+\[ \Theta^{*} = \{(h, \alpha) \in \mathcal{H} \times \mathcal{A} \mid  h(y) + \alpha(t) = s^{*}(y, t)\}.\]
+We verify that this set is nonempty under Assumption \ref{assumption:stationary}. Recall that $w(y, y'; t) = \frac{\gamma(y;t)}{\gamma(y'; t)}$ for all $y, y' \in \mathcal{Y}$ and $t \in \mathcal{T}$. Fix $y'$. Under Assumption \ref{assumption:stationary}, the left side does not depend on $t$ and $y'$ is fixed, so $w(y, y'; t) = \tilde{w}(y)$ and $\gamma(y'; t)$ is a constant that depends on $t$, so $\gamma(y'; t) = \lambda_{t}.$ This implies $\gamma(y;t)$ is the product of a time-dependent constant and a function that only depends on $y$, i.e. $\gamma(y;t) = \lambda_{t} \cdot \tilde{w}(y)$. As a result, we have that $s^{*}(y,t)$ is given by
+\begin{align*}
+s^{*}(y, t) &= \log\Big(\frac{dQ_{t}(y)}{dP_{t}(y)}\Big) \\
+&= \frac{\PP[Q_{t}]{R=1}}{\gamma(y;t)} \\
+&= \log\Big( \frac{\PP[Q_{t}]{R=1}}{\lambda_{t} \cdot \tilde{w}(y)} \Big) \\
+&= \alpha_{t} + h(y),
+\end{align*}
+where $s^{*}$ is a time-dependent constant $\alpha_{t}$ and a function $h$ that only depends on $y$. Thus, $\Theta^{*}$ must be nonempty. Furthermore, $\Theta^{*}$ is the set of minimizers of the unconstrained population risk because every $(h, \alpha) \in \Theta^{*}$ achieves the same population risk as $s^{*}$ in \eqref{eq:simple}.
+
+We can show that there exists a unique $(h, \alpha) \in \Theta^{*}$ such that $\alpha(0) = 0.$ To see this, suppose $(h_{1}, \alpha_{1}) \in \Theta^{*}$ and $\alpha_{1}(0) = c$, where $c \neq 0$. Then, we can define $h_{2}(y) = h_{1}(y) + c$ and $\alpha_{2}(t) = \alpha_{1}(t) - c$ so that $\alpha_{2}(t) = 0$. Thus, the constrained optimization problem in \eqref{eq:loss_min} has a solution that lies in the set of minimizers of the unconstrained optimization problem. Using an identical argument, we can also show that \eqref{eq:loss_min} has a unique solution.
+
+Thus, the solution to \eqref{eq:loss_min} is equal to the log density ratio between the target and survey population at time $t$, i.e.
+\[ h^{*}(y) + \alpha^{*}(t) = \log(\frac{dQ_{t}(y)}{dP_{t}(y)}).\]
+This implies that
+\begin{align*}
+\exp(h^{*}(y)) &= \exp(- \alpha^{*}(t)) \cdot \frac{dQ_{t}(y)}{dP_{t}(y)} \\
+&= \exp(- \alpha^{*}(t)) \cdot \frac{\PP[Q_{t}]{R=1}}{\gamma(y;t)} \\
+&= C_{t} \cdot \frac{1}{\gamma(y;t)}.
+\end{align*}
+This yields \eqref{eq:prop_density}, which proves the desired result.
+\end{proof}
+
+Stationary sampling bias implies that there is a time-invariant reweighting function so that 
+\[\theta(t) = \frac{\EE[P_{t}]{g(Y) \cdot Y}}{\EE[P_{t}]{g(Y)}}.\]
+This suggests that in the absence of individual-level samples from $Q_{t}$ we can estimate $g$ by solving a series of moment conditions. In particular, provided that we have access to lagged aggregate outcomes from the target population $\theta(t)$, we aim to find $g$ that satisfies
+\[ \frac{\EE[P_{t}]{g(Y) \cdot Y}}{\EE[P_{t}]{g(Y)}} = \theta(t) \quad \forall t \in [m].\]
+
+We can parametrize $g(y) = \exp(\gamma^{T}\psi(y))$ for $\gamma \in \mathbb{R}^{m}$. Then, we find $\gamma$ so that
+\[ \frac{\EE[P_{t}]{\exp(\gamma^{T}\psi(Y)) \cdot Y}}{\EE[P_{t}]{\exp(\gamma^{T} \psi(Y))}} = \theta(t).\]
+Equivalently, we solve
+\[ \min_{\gamma \in \mathbb{R}^{m}} \mathbf{1}^{T}\text{vec}(\log(\EE[P_{t}]{\exp(\gamma^{T} \psi(Y))}))- \theta(t)^{T}\gamma.\]
+
+As a result, we have two ways to estimate the weights (1) using individual-level samples from $Q_{t}$ and (2) using aggregate-level data from $Q_{t}$.
+\end{section}
+
+\begin{section}{Nonstationary Sampling Bias}
+
+Under nonstationary sampling bias, the density ratio cannot be further decomposed into $\lambda(t) \cdot w(y)$. 
+\[ \frac{dQ_{t}(y)}{dP_{t}(y)} = \lambda(t) \cdot w(y) \cdot r(y;t).\]
+
+For simplicity, suppose that $\lambda(t) = 1.$
+
+What does the pooling algorithm return when $\frac{dQ_{t}(y)}{dP_{t}(y)} = w(y) \cdot r(y;t)$?
+
+
+
+\end{section}
+
+
+
+% \begin{section}{Nonstationary Sampling Bias}
+
+% When sampling bias is stationary, we can show that
+% \[ \gamma(y; t) = \lambda(t) \cdot w(y).\]
+
+
+% Let $z(y; t) = \frac{r(y; t)}{\lambda(t) \cdot w(y)}$. If $ |z(y; t)| \leq 1$, then 
+% \[ \frac{1}{1 + z(y;t)} = 1 - z(y; t) + z(y;t)^{2}) + o(|z(y;t)|^{2}). \]
+% Then,
+% \begin{align*}
+% (1 + z(y;t)) \cdot (1 + z(y'; t)) &= (1 + z(y ; t)) \cdot (1 - z(y'; t) + z(y';t)^{2}) + o(|z(y;t)|^{2})) \\
+% &= 1 + z(y; t) - z(y';t) \cdot (1 + z(y;t)) + z(y'; t)^{2} \cdot (1 + z(y; t)) \\
+% &= 1 + z(y; t) - z(y'; t).
+% \end{align*}
+
+% Then we note that
+% \begin{align*}
+% \frac{w(y, y';t)}{w(y, y'; s)} &=  \frac{\lambda(t) \cdot w(y) + r(y; t)}{\lambda(t) \cdot w(y') + r(y'; t)} \cdot \frac{\lambda(s) \cdot w(y') + r(y'; s)}{\lambda(s) \cdot w(y) + r(y; s)} \\
+% &= \frac{1 + \frac{r(y; t)}{\lambda(t) \cdot w(y)}}{1 + \frac{r(y'; t)}{\lambda(t) \cdot w(y')}} \cdot  \frac{1 + \frac{r(y; t)}{\lambda(t) \cdot w(y)}}{1 + \frac{r(y'; t)}{\lambda(t) \cdot w(y')}} \\
+% &= \frac{1 + z(y;t)}{1 + z(y';t)} \cdot  \frac{1 + z(y;t)}{1 + z(y';t)} \\
+% \end{align*}
+
+% \end{section}
+
+
+
+% \begin{lemm}
+% Suppose Assumption \ref{assumption:stationary} holds. Then, there exists a function $g: \mathcal{Y} \rightarrow \mathbb{R}$ so that $r(y; t) = c_{t} \cdot g(y)$, where $c_{t} = 1/ \EE[P_{t}]{g(Y)}.$
+% \end{lemm}
+
+% \begin{proof}
+
+% \end{proof}
+
+% How to estimate $g(Y)$? Suppose consider the distribution $P$ and the distribution $Q$. The distribution $S$ is a distribution over $(Y, T)$, where $T \sim \text{Uniform}([M])$ and $Y \sim P_{T}$. The distribution $Q$ is defined analogously. Let $F$ be the distribution over $(Y, T, Z)$, where $Z \sim \text{Bernoulli}(\frac{1}{2})$. Then, we have that $F_{(Y, T) \mid Z=1} = Q $ and $F_{(Y, T) \mid Z=0} = P.$
+
+% We note that
+% \[ r(y;t) = c_{t} \cdot g(y).\]
+% This implies that
+% \[ \log r(y; t) = \log c_{t} + \log g(y).\]
+% We can parametrize the components of the density ratio as follows: first, $\alpha_{t} = \log c_{t}$ corresponds to time-dependent one-dimensional nuisance parameters and $h(y) = \log g(y)$ is the base density ratio, which is our parameter of interest. We consider the following loss function:
+% \[ L(h, \alpha, z) := \log(1 + \exp(h + \alpha)) - z \cdot (h + \alpha).\]
+% Then, we obtain the following population risk minimization problem
+% \[ \min_{h, \alpha} \{\EE[F]{L(h(Y), \alpha(T), Z)} : \EE[F]{\alpha(T)} = 0\}.\]
+
+
+
+
+% \begin{lemm}
+% Suppose Assumption \ref{assumption:stationary} holds. For any $s \in [T]$, we have that
+
+% \end{lemm}
+
+% Note that Assumption \ref{assumption:stationary} does not imply that the density ratio $r$ is constant with respect to $t$. In particular, 
+% \[ r(y; t) = \frac{dQ_{t}(y)}{dP_{t}(y)} = \frac{\PP[Q_{t}]{R=1}}{\PP[Q_{t}]{R=1 \mid Y=y}} = \int w_{0}(y', y) \cdot dQ_{t}(y') dy'.\]
+% Thus, even if $w(y', y; t)$ is constant in $t$, $r(y; t)$ still varies because $Q_{t}$ can change arbitrarily over time.
+
+% For this reason, the above lemma is somewhat surprising. Despite the fact that the density ratio is not constant over time, solving \eqref{eq:loss} with the density ratio from \textit{any} time step $s$ yields the target quantity. The key insight is that 
+
+
+% \begin{proof}
+% We can show that $\theta(t)$ is given by
+% Recall that by Bayes' rule, we have that 
+% \[\gamma(y;t) = \frac{dP_{t}(y)}{dQ_{t}(y)} \cdot \PP[Q_{t}]{R=1}.\]
+
+% We can check the right side of \eqref{eq:ratio} is the solution to
+% \begin{equation} \label{eq:elicitable_loss} \min_{\theta} \EE[S_{t}]{\frac{1}{\gamma(Y;t)} \cdot(\theta^{2}  - \theta \cdot Y) }. \end{equation}
+
+
+% \end{proof}
+
+
+
+
+
+
+
+
+% \begin{section}{Nonstationary Sampling Bias}
+
+% Let $\tilde{w}(t)$ be an estimate of $w(t)$. Then, the estimate of $\theta(T)$ is given by
+% \[ \tilde{\theta}_{\text{DF}} =  \Psi(s(T), \tilde{w}(T)).\]
+
+% \begin{assumption}[Lower Bound]
+% \label{assumption:lower_bound}
+% Suppose $w(t)\geq w_{0}$ for some $w_{0} > 0.$
+% \end{assumption}
+
+% Provided Assumption \ref{assumption:lower_bound} applies to $w, \tilde{w}$, the bias of the data fusion estimate is given by
+% \begin{align*}
+% |\tilde{\theta}_{\text{DF}} - \theta(T)| &= |\Psi(s(T), \tilde{w}(T)) - \Psi(s(T), w(T))| \\
+% &= \Big|\frac{s(T)}{\tilde{w}(T) \cdot (1 - s(T)) + s(T)} - \frac{s(T)}{w(T) \cdot (1 - s(T)) + s(T)}\Big| \\
+% &\leq \Big|\frac{s(T) \cdot (1 - s(T))}{(\tilde{w}(T) (1 - s(T)) + s(T)) \cdot (w(T) \cdot (1 - s(T)) + s(T))} \Big| \cdot |w(T) - \tilde{w}(T)| \\
+% & \leq \frac{s(T) \cdot (1 - s(T))}{\min (1, w_{0})^{2}} \cdot |w(T) - \tilde{w}(T)|.
+% \end{align*}
+% \end{subsection}
+
+
+% \begin{subsection}{Forecasting}
+% The standard approach for estimating $\theta(t)$ is via time series forecasting that leverages historical data from $Q_{t}$ from $t=1, \dots T-1$. Data from time step $t=T$ is crucially unavailable, so the trend must be extrapolated. Let $\tilde{\theta}(t)$ be a local linear approximation of $\theta(t)$.
+% \[ \tilde{\theta}_{\text{TS}} = \tilde{\theta}(T).\]
+
+% The bias of the time-series estimate is given by
+% \begin{align*}
+% |\tilde{\theta}_{\text{TS}} - \theta(T)| &= |\tilde{\theta}(T) - \theta(T)|.
+% \end{align*}
+% \end{subsection}
+
+% \begin{assumption}[Bounded Second Derivative]
+% Suppose $\theta(t), w(t)$ are twice differentiable and have bounded second derivatives, i.e.
+% \[ |\theta''(t)| \leq K_{\theta},\,\quad |w''(t)| \leq K_{w}. \]
+% \end{assumption}
+
+% \end{section}
+
+
+% \begin{assumption}
+% \label{assumption:lower_bound}
+% The function $w(t) \geq w_{0}$ for some $w_{0} > 0.$
+% \end{assumption}
+
+% We define $\theta(t) := \EE[Q_{t}]{Y}$ and $p(t):= \EE[P_{t}]{Y}.$ Note that given $\theta(t), w(t)$, we have that
+% \begin{align*}
+% p(t) = \frac{\theta(t)w(t)}{\theta(t) \cdot (w(t) -1 ) + 1}.
+% \end{align*}
+
+
+% We aim to estimate $\theta(T).$
+% \begin{enumerate}
+%   \item Approach 1: Data Fusion.
+% We can obtain an estimate of $\theta(T)$ as follows.
+% \[ \tilde{g}_{1} = s(T) + (1 - w(T-1)) \cdot \frac{s(T) (1 - s(T))}{w(T-1) + s(T) (1 - w(T-1))}.\]
+% Limitation: The amount of sampling bias $w(t)$ may change over time, so $w(T) \neq w(T-1).$ This can result in a biased estimate of $\theta(T).$
+
+% \item Approach 2: Extrapolate Ground Truth.
+% We can obtain an estimate of $\theta(T)$ by extrapolation:
+% \[ \tilde{g}_{2} = \beta_{1}T + \beta_{0},\]
+% where $(\beta_{1}, \beta_{0})$ are the result of applying a linear fit to $\theta(t) \sim t$ with $t=1, 2, \dots T-1$.
+
+% Limitation: The parametric specification may be misspecified. This can result in a biased estimate of $\theta(T).$
+% \end{enumerate}
+% When is 
+% \[ (\tilde{g}_{1}(\theta, w) - \theta(T))^{2} < (\tilde{g}_{2}(\theta, w) - \theta(T))^{2}?\]
+
+% Define the class of differentiable functions with bounded derivative:
+% \[ \mathcal{F}_{c}^{1} = \{ f \in C^{2}([0, T]) \mid \sup_{t \in [0, T]} ||f''(t)|| \leq c \}.\]
+
+% Define the class of twice differentiable functions with bounded second derivative.
+% \[ \mathcal{F}_{K}^{2} = \{ f \in C^{2}([0, T]) \mid \sup_{t \in [0, T]} ||f''(t)|| \leq K \}.\]
+
+% \begin{conj}
+% Suppose that $\theta \in \mathcal{F}^{2}_{K}$ and $w \in \mathcal{F}^{1}_{c}$. If ,then worst-case bias of $\tilde{g}_{1}$ is smaller than the worst-case bias of $\tilde{g}_{2}$.
+% \[ \sup_{\theta \in \mathcal{F}^{2}_{K}, w \in \mathcal{F}^{1}_{c}}  (\tilde{g}_{2}(\theta) - \theta(T))^{2} \geq \sup_{\theta \in \mathcal{F}^{2}_{K}} (\tilde{g}_{1}(\theta, w) - \theta(T))^{2}.\]
+% \end{conj}
+
+% Note that $\tilde{g}_{1}$ is a function of the true $\theta$ function and $w$ function. In addition, $\tilde{g}_{2}$ is a function of the true theta function $\theta$.
+
+
+% \begin{subsection}{Analysis of Approach 1}
+
+% We have that
+% \begin{align*}
+% \tilde{g}_{1}(\theta, w) = \frac{\theta(T) w(T)}{\theta(T) \cdot (w(T) - w(T-1)) + w(T-1)}.
+% \end{align*}
+
+% The bias of $\tilde{g}_{1}(\theta, w)$ is given by
+% \begin{align*}
+% \tilde{g}_{1}(\theta, w)  - \theta(T) &= \frac{\theta(T)w(T)}{\theta(T) \cdot (w(T) - w(T-1)) + w(T-1)} - \theta(T) \\
+% &=\frac{(\theta(T) - \theta(T)^{2}) \cdot (w(T) - w(T-1))}{\theta(T) \cdot (w(T) - w(T-1)) + w(T-1)}.
+% \end{align*}
+
+% Then, if $w \in \mathcal{F}^{1}_{c}$ and Assumption \ref{assumption:lower_bound} holds, then 
+% \[ (\tilde{g}_{1}(\theta, w) - \theta(T))^{2} \leq \frac{(\theta(T)(1 - \theta(T)))^{2} \cdot c^{2}}{w_{0}^{2}}.\]
+% \end{subsection}
+
+% \begin{subsection}{Analysis of Approach 2}
+
+% Look into how to characterize the worst-case bias of $\tilde{g}_{2}$.
+
+
+% \end{subsection}
+
+
+
+
+
+% \end{section}
+
+% \begin{section}{Derivation}
+% Let $P_{t}, Q_{t}$ denote the survey and target population distributions respectively at time-step $t.$ Let $Q_{t}$ be a distribution over an outcome $Y \in \mathcal{Y}$ and a binary response indicator $R \in \{0, 1\}.$ Let $P_{t}$ be the $Y \mid R=1$ marginal of $Q_{t}$. Let $\alpha_{t}(y) = \PP[Q_{t}]{R=1 \mid Y=y}.$
+
+% Define the parameter of interest 
+% \[ \theta_{1} := \EE[P_{1}]{Y}.\]
+
+% Let
+% \[ w_{t}(y, y') := \frac{\alpha_{t}(y)}{\alpha_{t}(y')}.\]
+
+% \begin{assumption}[Stationary Sampling Bias]
+% \label{assumption:sampling_bias}
+% The function $w_{t}(y, y')$ is constant in $t$.
+% \end{assumption}
+
+% \end{section}
+
+% \begin{section}{Public health notes}
+% \begin{enumerate}
+%   \item While traditional surveillance mechanisms remain the cornerstone of outbreak investigations, they often require time, resources, and infrastructure rarely available in the setting of an epidemic. Novel data streams, such as epidemic case incidence data provided by digital disease detection tools, demographic data estimates aided by geospatial mapping tools, and advances in mathematical modeling, can support efforts to contain emerging outbreaks.
+% \end{enumerate}
+
+% \end{section}
+
+
+% \begin{section}{Related Work}
+
+% \begin{enumerate}
+%   \item 
+% \end{enumerate}
+
+% \end{section}
+
+% \begin{section}{Applications}
+
+% \begin{enumerate}
+%   \item National Health Call-Center Data - data from a national health outline that members of the public can call for medical advice and information. Call details are recorded in real time, continuously updated, can measure prevalence of a health outcome from call records. However, representativeness may be limited - hotline use might be lower among rural or marginalized populations (due to limited phone access or awareness) and there may also be reporting bias (only those motivated to call are counted).
+% \end{enumerate}
+
+% \end{section}
+
+
+\bibliographystyle{plainnat} 
+\bibliography{ref.bib}
+
+\end{document}

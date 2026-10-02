@@ -1,0 +1,171 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{microtype}
+\usepackage{enumitem}
+
+\newtheorem{assumption}{Assumption}
+
+\title{Stationary Treatment Selection for Difference-in-Differences}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Statistical Setup}
+
+Let $G\in\{0,1\}$ denote treatment-group membership, where $G=1$ denotes units that receive treatment after time $t_0$. Let $Y_t(0)$ and $Y_t(1)$ denote untreated and treated potential outcomes at time $t$. We are interested in the average treatment effect on the treated,
+\[
+\tau(t)
+:=
+\mathbb E[Y_t(1)-Y_t(0)\mid G=1].
+\]
+
+For $t<t_0$, treatment has not yet occurred, so
+\[
+Y_t=Y_t(0)
+\]
+for both treated and untreated groups. For $t\ge t_0$, we observe $Y_t(1)$ for the treated group and $Y_t(0)$ for the untreated group, while the counterfactual distribution
+\[
+Y_t(0)\mid G=1
+\]
+is unobserved.
+
+Standard difference-in-differences identifies this counterfactual by imposing parallel trends on the conditional mean of $Y_t(0)$. We instead impose stability of the mechanism selecting units into treatment as a function of their untreated potential outcomes.
+
+Define
+\[
+\gamma(y;t)
+=
+\mathbb P[G=1\mid Y_t(0)=y].
+\]
+
+We define the relative odds of treatment selection between two individuals with untreated potential outcomes $y$ and $y'$ as
+\[
+w(y,y';t)
+=
+\frac{
+\gamma(y;t)/(1-\gamma(y;t))
+}{
+\gamma(y';t)/(1-\gamma(y';t))
+}.
+\]
+
+\begin{assumption}[Stationary Treatment Selection]
+The function $w(y,y';t)$ is constant in $t$.
+\end{assumption}
+
+The assumption allows the overall probability of treatment to vary over time, but requires the relative relationship between untreated potential outcomes and treatment selection to remain stable.
+
+Under Assumption 1, there exist a time-specific function $\alpha(t)$ and a time-invariant function $\theta(y)$ such that
+\[
+\operatorname{logit}\mathbb P[G=1\mid Y_t(0)=y]
+=
+\alpha(t)+\theta(y).
+\]
+
+\section{Identification}
+
+Let
+\[
+P_t^1
+=
+\mathcal L(Y_t(0)\mid G=1)
+\]
+and
+\[
+P_t^0
+=
+\mathcal L(Y_t(0)\mid G=0).
+\]
+
+Bayes' rule implies
+\[
+\frac{dP_t^1(y)}{dP_t^0(y)}
+=
+\frac{\mathbb P[G=0]}{\mathbb P[G=1]}
+\frac{
+\mathbb P[G=1\mid Y_t(0)=y]
+}{
+\mathbb P[G=0\mid Y_t(0)=y]
+}.
+\]
+
+Under stationary treatment selection,
+\[
+\frac{
+\mathbb P[G=1\mid Y_t(0)=y]
+}{
+\mathbb P[G=0\mid Y_t(0)=y]
+}
+=
+\exp(\alpha(t)+\theta(y)).
+\]
+Therefore,
+\[
+\frac{dP_t^1(y)}{dP_t^0(y)}
+=
+C_t\exp(\theta(y)),
+\]
+where $C_t$ is a constant that depends only on $t$.
+
+Consequently, the untreated mean of the treated population can be written as
+\[
+\mathbb E[Y_t(0)\mid G=1]
+=
+\frac{
+\mathbb E[\exp(\theta(Y_t))Y_t\mid G=0]
+}{
+\mathbb E[\exp(\theta(Y_t))\mid G=0]
+}.
+\]
+
+For pre-treatment periods, $Y_t=Y_t(0)$ for both groups. Thus, repeated pre-treatment observations identify the time-invariant weighting function $\theta(\cdot)$. Under Assumption 1, the same weighting function can then be applied to the post-treatment control distribution to recover the counterfactual untreated mean for the treated population.
+
+Hence, for $t\ge t_0$,
+\[
+\tau(t)
+=
+\mathbb E[Y_t\mid G=1]
+-
+\frac{
+\mathbb E[\exp(\theta(Y_t))Y_t\mid G=0]
+}{
+\mathbb E[\exp(\theta(Y_t))\mid G=0]
+}.
+\]
+
+\section{Relation to Parallel Trends}
+
+Stationary treatment selection provides an alternative to the usual parallel-trends restriction. Parallel trends assumes
+\[
+\mathbb E[Y_t(0)-Y_s(0)\mid G=1]
+=
+\mathbb E[Y_t(0)-Y_s(0)\mid G=0].
+\]
+
+In contrast, stationary treatment selection allows the untreated potential-outcome distributions of the two groups to evolve differently over time, provided that their density ratio retains the form
+\[
+\log
+\frac{dP_t^1(y)}{dP_t^0(y)}
+=
+\alpha(t)+\theta(y).
+\]
+
+Thus, parallel trends transports changes in outcomes across groups, while stationary treatment selection transports a stable reweighting function across time.
+
+The assumption may be natural in settings where treatment assignment follows a persistent selection rule. For example, treatment capacity or the overall treatment rate may change over time, while the relative tendency to treat individuals with different untreated potential outcomes remains stable.
+
+Multiple pre-treatment periods also provide a diagnostic for the assumption. Stationary treatment selection implies that
+\[
+\log\frac{dP_t^1(y)}{dP_t^0(y)}
+-
+\log\frac{dP_t^1(y')}{dP_t^0(y')}
+\]
+should remain approximately constant across pre-treatment periods. This provides an analogue of a pre-trends diagnostic for the stability of treatment selection.
+
+\end{document}

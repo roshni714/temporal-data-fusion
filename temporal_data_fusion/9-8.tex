@@ -1,0 +1,374 @@
+\documentclass{article}
+
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{natbib}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{fancyvrb}
+\usepackage{enumerate}
+\usepackage{relsize}
+\usepackage{multirow}
+\usepackage{mathrsfs}
+
+\usepackage{hyperref}
+\usepackage[margin=1.4in]{geometry}
+\hypersetup{colorlinks,citecolor=blue,urlcolor=blue,linkcolor=blue}
+\newcommand{\Lihua}[1]{{\color{blue}#1}}
+
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+
+\usepackage{stefan_tex}
+\graphicspath{{./figures/}}
+
+%\numberwithin{equation}{section}
+
+%%%%%%%%% Theorems
+
+\theoremstyle{definition}
+\newtheorem{exam}{Example}
+\newtheorem{defi}{Definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{property}{Property}
+
+ \theoremstyle{plain}
+ \newtheorem{prop}{Proposition}
+ \newtheorem{conj}[prop]{Conjecture}
+ \newtheorem{coro}[prop]{Corollary}
+ \newtheorem{lemm}[prop]{Lemma}
+ \newtheorem{theo}[prop]{Theorem}
+%\theoremstyle{plain}
+%\newtheorem{prop}{Proposition}[section]
+%\newtheorem{coro}{Corollary}[section]
+%\newtheorem{lemm}{Lemma}[section]
+%\newtheorem{theo}{Theorem}[section]
+
+\theoremstyle{remark}
+\newtheorem{comm}{Comment}
+\newtheorem{rema}{Remark}
+
+\author{Roshni Sahoo\\
+  \texttt{r.sahoo@columbia.edu}}
+
+
+\title{Data Fusion Interview Challenge}
+
+\date{Columbia University}
+
+
+
+\begin{document}
+
+\maketitle
+
+% \begin{abstract}
+% Decision makers require real-time estimates of outcomes in a target population. We study real-time outcome estimation given representative but lagged data from target population and real-time but potentially biased data drawn from a survey population that differs from the target population. When the selection mechanism into the survey population is stationary, we demonstrate that the real-time mean outcome in the target population can be expressed as a time-invariant reweighting of the survey data. The weights are identified as the solution to an augmented convex optimization problem on data pooled from the target and survey populations across time.
+% \end{abstract}
+
+% Modern nowcasting methods are the predominant approach for real-time outcome estimation given lagged but representative data from the target population. However, these methods can incur substantial bias in nonstationary environments, where the data distribution of the target population can evolve over time. Nevertheless, in many settings, practitioners additionally have access to lagged and current data drawn from a survey population that is potentially biased relative to the target population.
+
+
+%Questions to answer: what is the drawback of nowcasting / forecasting from the target distribution in this setting?
+
+%What's the problem?
+% Decision makers require real-time estimates of outcomes in a target population.
+
+% Why is hard?
+% In many settings, there may be a lag between 
+% \rs{why is getting real-time estimates of health outcomes particularly hard? answer: data collection takes a long time. why does data collection take a long time? why do decision makers only have access to lagged outcomes?}
+
+% The predominant approach to obtaining such outcomes entails forecasting their value from outcomes collected from the target population in previous time periods. The limitation of this approach is that outcomes can evolve over time, so the lagged data may not fully capture current trends. Nevertheless, decision makers often have access to additional real-time information that is drawn from a population that is potentially biased relative to the target population. In this work, we provide a framework for combining potentially biased, real-time data with unbiased, lagged data for forecasting.
+
+% \begin{exam}
+% Online and offline surveys. Online surveys permit rapid data collection, but we may be concerned that online surveys suffer from sampling bias \citep{bradley2021unrepresentative,kessler2022changes}. In contrast, offline surveys are representative relative to a target population but they cannot be deployed instantaneously.
+% \end{exam}
+
+
+% \begin{exam}
+% Syndromic surveillance?
+% \end{exam}
+
+% \begin{section}{Introduction}
+% \rs{online and offline surveys}
+% \rs{people seeking medical care differ in fundamental ways from people who don't seek care, how to know true prevalence of disease. maybe talk to Rishi about this?}
+
+% \begin{subsection}{Related Work}
+% Our work builds upon existing work on density ratio estimation. In particular, our approach is most closely related to the the KLIEP learning procedure \citep{sugiyama2007direct}, which proposes to learn importance weights by minimizing the KL divergence between a target distribution and a reweighted source distribution. Our population objective in \eqref{eq:loss_min} is equivalent to the KLIEP objective when conditioned on a fixed time step $t$ and minimized with respect to the auxiliary parameter $\alpha$. Nevertheless, our parametrization of the objective function permits data from multiple target and source distributions to be pooled to learn a common weighting function that is shared across time.
+
+% \end{subsection}
+% \end{section}
+
+
+\begin{section}{Statistical Setup}
+% Let $P_{t}$ denote a distribution over individuals in the general US population at time $t$. Let $S_{t}$ denote a distribution over individuals in the general US population who respond to a survey at time $t$. 
+We consider two populations that both evolve over time $t=1, 2, \dots$. The population over individuals in the general US population at time $t$ is denoted by $P_{t}$, and the second is the the population over individuals in the US who respond to a survey at time $t$ is denoted by $S_{t}$. 
+
+Let $P_{t}$ be a joint distribution over an outcome $Y \in \mathcal{Y} \subset \mathbb{R}$ and a binary response indicator $R \in \{0, 1\}$ that corresponds to whether or not an individual responds to the survey. The outcome $Y$ is a socioeconomic or health indicator, such as an individual's vaccination status, their employment status or their living standards. Let $S_{t}$ be a distribution over outcomes conditional on respond to the survey $Y \mid R=1.$ This means that $P_{t}$ is the joint distribution over $(Y, R)$, and $S_{t}$ is the distribution over $Y \mid R=1$. Note that the people who respond to the survey may not necessarily be representative of the US population, i.e. $S_{t} \neq P_{t}$.
+
+We are interested in estimating the average outcome in the general population of the US at a current time step $t$. However, we only have access to timely but potentially non-representative data on the US population from surveys, i.e. we have access to $S_{t}$ for only time steps $t=1, 2, \dots M$, and representative but lagged data on the general US population, i.e. we have access to $P_{t}$ for only for time steps $t=1, 2, \dots m$ for $m < M$. 
+
+Our estimand of interest is 
+\[\mu(t) := \EE[P_{t}]{Y} \quad t = m+1, \dots M.\] Note that $\mu(t)$ for $t = m+1, \dots M$ cannot be directly derived from our data because we do not have access to $P_{t}$ when $t > m$. 
+
+Define the relative probability of sample selection between two individuals with outcome $y$ and $y'$ at time-step $t$ as 
+\begin{equation} w(y, y'; t) := \frac{\PP[P_{t}]{R=1 \mid Y=y}}{\PP[P_{t}]{R=1 \mid Y= y'}}.\end{equation}
+For example, suppose that  $Y$ corresponds to vaccination status, a binary variable. Then, we can omit the dependence of $w$ on $y, y'$ and define \[ w(t):= \frac{\PP[P_{t}]{R = 1\mid Y=1}}{\PP[P_{t}]{R=1 \mid Y=0}}.\] When $Y$ corresponds to vaccination status, the quantity $w(t)$ corresponds to how much more likely a vaccinated individual is to respond to survey than an unvaccinated individual.
+
+We assume that that this relative probability is stable over time.
+\begin{assumption}[Stationary Selection]
+\label{assumption:stationary_selection}
+The function $w(y, y'; t)$ is constant in $t$.
+\end{assumption}
+In this note, we study to whether $\mu(t)$ can be identified, provided that Assumption \ref{assumption:stationary_selection} holds.
+\end{section}
+
+
+\begin{section}{Algorithm}
+Let $T$ be a random variable that denotes the time step and let $Z$ be a pseudolabel that captures whether a sample is drawn from the survey or target population. Let $P_{t, Y}$ denote the marginal distribution over outcomes $Y$ in $P_{t}.$ The distribution $F$ is a distribution over $(T, Z, Y)$, where 
+\[Z  \sim \text{Bernoulli}(1/2),\, T \sim \text{Uniform}([m]),\, F_{Y \mid T=t, Z=1} = P_{t, Y},\, F_{Y \mid T=t, Z= 0} = S_{t}.\]
+As a result, $F$ can be viewed as a pooled distribution over the paired data from $S_{t}, P_{t}$ for $t=1, 2, \dots m$.
+
+Define a loss function 
+\begin{equation} L(\theta, a, z) := (1 - z) \cdot \exp(\theta + a) - z \cdot (\theta + a).\end{equation}
+
+We solve the augmented convex optimization problem
+\begin{equation} 
+\label{eq:loss_min}
+\{\tilde{\theta}(\cdot), \tilde{\alpha}(\cdot)\} \in \arg\min_{(\theta, \alpha) \in \Theta \times \mathcal{A}} \{\EE[F]{L(\theta(Y),\, \alpha(T),\, Z)}\},\end{equation}
+where $\Theta$ denotes a flexible function class (neural networks) and $\mathcal{A} \subset \mathbb{R}^{m}$ such that $\mathcal{A}= \{ \alpha \in \mathbb{R}^{m} \mid \alpha(m) = 0 \}$, where $\alpha(t)$ denotes the $t$-th index of vector $\alpha$.
+
+After solving the optimization problem in \eqref{eq:loss_min}, we can obtain an estimator
+\[\tilde{\mu}(t) := \EE[S_{t}]{\exp(\tilde{\theta}(Y)) \cdot Y} / \EE[S_{t}]{\exp(\tilde{\theta}(Y))}.\]
+
+\end{section}
+
+\begin{section}{Task}
+
+For $t=1,\ldots,m$, you observe independent samples from both the population outcome distribution $P_t^Y$ and the survey distribution $S_t$. For $t=m+1,\dots,M$, you observe samples only from $S_{t}$. Your goal is to use the historical paired data $t\leq m$ to learn a selection correction $\tilde{\theta}$ and use it to estimate $\tilde{\mu}$.
+
+It may be helpful to skim \citet{sahoo2022learning} Appendix Section B to see an example of a simple one-dimensional simulation. 
+
+
+\noindent\textbf{Data-Generating Process}
+\begin{enumerate}
+  \item  Let $Y$ be a continuous-valued outcome. Specify distributions for $S_{t}, P_{t}$ for $t=1, 2, \dots M$ that match the setting. Note that $S_{t}, P_{t}$ can be defined arbitrarily but $P_{t}$ should be a distribution over $(Y, R)$, $S_{t}$ should be the $Y \mid R=1$-marginal of $P_{t}$, and $P_{t}$ and $S_{t}$ can change over time but Assumption \ref{assumption:stationary_selection} must hold. Ideally, $\PP[P_{t}]{R=1}$ also changes over time. Create figures of $S_{t}, P_{t}$ over time. 
+  \item Write down a mathematical specification of the data generating process. How did you define $P_{t}$? How did you define $S_{t}$? How do you simulate drawing samples from $S_{t}$? As an example, see Eq. 39 and Eq. 40 from \citet{sahoo2022learning} Section B.
+  \item Draw $n$ i.i.d. samples drawn from $S_{t}$ for each $t=1, 2, \dots m$ and $n$ i.i.d. samples drawn from $P_{t}$ for each $t=1, 2, \dots m.$ Create a dataset of i.i.d. samples from $F$ (note that this dataset should have $2mn$ samples).
+\end{enumerate}
+
+\noindent\textbf{Optimization}
+\begin{enumerate}
+  \item Implement a Pytorch pipeline for learning $\tilde{\theta}, \tilde{\alpha}$ via \eqref{eq:loss_min} using your synthetic dataset from $F$. Hint: The set up of $(\theta, \alpha)$ is closely related to the RU Regression parametrization from \citet{sahoo2022learning}.
+  \item Estimate $\tilde{\mu}(t)$ for $t=m+1, \dots M$ using your learned estimate of $\tilde{\theta}$ and the samples from $S_{t}$ for $t > m$.
+\end{enumerate}
+
+\noindent\textbf{Conclusions}
+\begin{enumerate}
+  \item Compare $\mu(t)$ to $\tilde{\mu}(t)$ and to $\EE[S_{t}]{Y}$ for $t= m+1 \dots M$ in a figure.
+\end{enumerate}
+
+\end{section}
+
+\begin{section}{Deliverable}
+
+Please prepare concise three slides on your results and be prepared to talk through your implementation.
+\begin{enumerate}
+  \item The first slide should capture the data-generating process in mathematical notation and in a figure.
+  \item The second slide should capture how you implemented solving the optimization problem.
+  \item The third slide should capture the comparison of $\mu(t), \EE[S_{t}]{Y}, \tilde{\mu}(t)$ and any conclusions and learnings.
+\end{enumerate}
+
+\end{section}
+
+% \begin{lemm}
+% \label{lemm:existence_uniqueness}
+% The solution to \eqref{eq:loss_min}, denoted by $(\tilde{\theta}, \tilde{\alpha})$, exists and is unique. Under Assumption \ref{assumption:stationary_selection}, the solution identifies $\mu(\cdot)$ via
+%  \begin{equation} \label{eq:ratio_2} \mu(t) = \EE[S_{t}]{\exp(\tilde{\theta}(Y)) \cdot Y} / \EE[S_{t}]{\exp(\tilde{\theta}(Y))}.\end{equation}
+
+% \end{lemm}
+
+% We define the following estimator for $\mu(t)$
+% \[ \tilde{\mu}(t) = \EE[S_{t}(\tilde{\theta})]{Y}.\]
+% \begin{lemm}
+% \label{lemm:equivalence}
+% Any $\tilde{\theta}(\cdot)$ that solves \eqref{eq:loss_min} also solves \begin{equation} \label{eq:kl_min} \min_{\theta \in \Theta} \frac{1}{m} \sum_{t=1}^{m} \textrm{KL}(P_{t} || S_{t}(\theta)),\end{equation}
+% where $S_{t}(\theta)$ is an exponential tilting of $S_{t}$ with sufficient statistic $\theta$, i.e. $dS_{t}(\theta)(y) \propto  dS_{t}(y) \cdot \exp(\theta(y)).$
+% \end{lemm}
+
+
+
+
+% \end{section}
+
+% \begin{section}{Proofs}
+
+
+
+% \begin{subsection}{Proof of Lemma \ref{lemm:existence_uniqueness}}
+
+% We simplify the objective to show existence and uniqueness. Observe that
+% \begin{align*}
+% &\EE[F]{L(\theta(Y),\, \alpha(T),\, Z) \mid T=t} \\
+% &= \frac{1}{2} \EE[F]{L(\theta(Y), \alpha(T), Z) \mid T=t, Z=1} + \frac{1}{2} \EE[F]{L(\theta(Y), \alpha(T), Z) \mid T=t, Z=0} \\
+% &= \frac{1}{2} \Big( -\EE[P_{t}]{\theta(Y)} - \alpha(t) + \EE[S_{t}]{\exp(\theta(Y)+ \alpha(t))} \Big).
+% \end{align*}
+% This implies that
+% \begin{align*}
+% \EE[F]{L(\theta(Y),\, \alpha(T),\, Z)} &= \frac{1}{2m} \sum_{t=1}^{m} \Big(\EE[S_{t}]{\exp(\theta(Y)+ \alpha(t))} -\EE[P_{t}]{\theta(Y)} - \alpha(t)  \Big).
+% \end{align*}
+% For a fixed $\alpha \in \mathcal{A}$, we can minimize the above objective with respect to $\theta$. We note that
+% \begin{align*}
+% \nabla_{\theta(y)} \EE[F]{L(\theta(Y),\, \alpha(T),\, Z) \mid Y=y} &= \frac{1}{2m} \sum_{t=1}^{m} \exp(\theta(y)) \cdot \exp( \alpha(t)) \cdot dS_{t}(y) - dP_{t}(y) = 0.
+% \end{align*}
+% Then we have 
+% \begin{align*}
+% \theta(y; \alpha) &= \log\Big( \frac{\sum_{t=1}^{m} dP_{t}(y)}{ \sum_{t=1}^{m} \exp(\alpha(t)) \cdot dS_{t}(y)} \Big).
+% \end{align*}
+% As a result, the objective of \eqref{eq:loss_min} for fixed $\alpha$ and $\theta$ taking on its minimizing value corresponds to
+% \begin{align*}
+% \EE[F]{L(\theta(Y; \alpha),\, \alpha(T),\, Z)} &= \frac{1}{2m} \sum_{t=1}^{m} \EE[P_{t}]{\log\Big(\sum_{t=1}^{m} \exp(\alpha(t)) \cdot dS_{t}(Y) \Big)} - \alpha(t) + C,
+% \end{align*}
+% where $C$ is a constant that does not depend on $\alpha$.
+
+% \begin{subsubsection}{Existence}
+% Note that when $m=1$, the objective does not depend on $\alpha$, so the solution $(\alpha, \theta(\cdot; \alpha))$ corresponding to $\alpha=0$ is a solution to the optimization problem. 
+
+% For $m > 1$, it is straightforward to see that the objective is continuous in $\alpha$ on $\mathcal{A}$. In addition, we can also verify that $\EE[F]{L(\theta(Y; \alpha),\, \alpha(T),\, Z)}$ is coercive in $\alpha$ on $\mathcal{A}$. Let $\alpha \in \mathcal{A}$. Suppose $K = \max_{t} \alpha(t)$. Then there exists some $j \in [m]$ such that $\alpha(j) = K.$ Observe that
+% \begin{align*}
+% \sum_{t=1}^{m} \exp(\alpha(t)) \cdot dS_{t}(y) \geq \exp(K) \cdot dS_{j}(y).
+% \end{align*}
+
+% Then, we have that 
+% \begin{align*}
+% \log\Big(\sum_{t=1}^{m} \exp(\alpha(t)) \cdot dS_{t}(y)\Big) - \alpha(t) &\geq  K + \log dS_{j}(y) - \alpha(t).
+% \end{align*}
+% Define $C' := \min_{j \in [m]} \frac{1}{2m} \EE[P_{t}]{\log dS_{j}(Y)}$. Note that $C' > - \infty$ because $S_{t}$'s share the same support for all $t$. This implies that
+% \begin{align*}
+% \EE[F]{L(\theta(Y; \alpha),\, \alpha(T),\, Z)} &= \frac{1}{2m} \sum_{t=1}^{m} \EE[P_{t}]{\log\Big(\sum_{t=1}^{m} \exp(\alpha(t)) \cdot dS_{t}(y)\Big)} - \alpha(t) \\
+% &\geq  \frac{1}{2m} \sum_{t=1}^{m} K + \EE[P_{t}]{\log dS_{j}(Y)} - \alpha(t) \\
+% &\geq \frac{1}{2m} \sum_{t=1}^{m} K - \alpha(t) + C'  \\
+% &\geq \frac{1}{2m} \cdot K  + C' \\
+% &= \frac{1}{2m} ||\alpha||_{\infty} + C'.
+% \end{align*}
+% Note that $\sum_{t=1}^{m}K - \alpha(t) \geq K$ because $K - \alpha(t) \geq 0$ for all $t \in [m]$ and $\alpha(m) = 0$, so $K - \alpha(m) = K$.
+% Since $\EE[F]{L(\theta(Y; \alpha),\, \alpha(T),\, Z)}$ is continuous and coercive in $\alpha$, it must have at least one minimizer.
+
+
+% \end{subsubsection}
+
+% \begin{subsubsection}{Uniqueness}
+% Define $h(\alpha) := \log(\sum_{t=1}^{m} \exp(\alpha(t)) \cdot dS_{t}(y))$. Let $\alpha, \beta \in \mathcal{A}$ and $\lambda \in [0, 1]$. We note that $h(\lambda \alpha + (1 - \lambda)\beta) = \log(\sum_{t=1}^{m} (\exp(\alpha(t)) dS_{t}(y))^{\lambda} \cdot (\exp(\beta(t)) \cdot dS_{t}(y))^{1- \lambda})$. We can apply Hölder's inequality to obtain
+% \begin{align*}
+% h(\lambda \alpha + (1- \lambda) \beta) &= \log\Big(\sum_{t=1}^{m} (dS_{t}(y) \cdot \exp(\alpha(t)))^{\lambda} \cdot  (dS_{t}(y) \cdot \exp(\alpha(t)))^{1 - \lambda} \Big) \\
+% &\leq \log\Bigg( \Big( \sum_{t=1}^{m} dS_{t}(y) \cdot \exp(\alpha(t)) \Big)^{\lambda} \cdot \Big(\sum_{t=1}^{m} (dS_{t}(y) \cdot \exp(\alpha(t))) \Big)^{1 - \lambda} \Bigg) \\
+% &=  \lambda h(\alpha) + (1 - \lambda) h(\beta).
+% \end{align*}
+% This implies convexity. 
+
+% Now, we show that $h$ must satisfy strict convexity on $\mathcal{A}$. For the sake of contradiction, suppose there exists $\alpha, \beta \in \mathcal{A}$, $\alpha \neq \beta$, and $\lambda \in (0, 1)$ such that convexity holds with equality. We note that Hölder's inequality only holds with equality when $dS_{t}(y) \cdot \exp(\alpha(t)) \propto  dS_{t}(y) \cdot \exp(\beta(t))$. Equivalently, $\alpha(t) - \beta(t) = c$ for all $t \in [m]$. We must have that $\alpha(m) = \beta(m) = 0$ because both lie in $\mathcal{A}$. So, $c = 0$ in order for equality to hold. This implies that $\alpha = \beta$, which is a contradiction. Thus, $h$ is strictly convex, so $\EE[F]{L(\theta(Y; \alpha),\, \alpha(T),\, Z)}$ is strictly convex. Since the objective is strictly convex and $\mathcal{A}$ is convex, so it can have at most one minimizer over $\mathcal{A}.$ 
+
+
+
+% \end{subsubsection}
+
+% \begin{subsubsection}{Identification}
+% Let $\gamma(y;t) = \PP[P_{t}]{R=1 \mid Y=y}.$ First, we observe that Bayes rule implies that 
+% \begin{align*}
+% dP_{t}(y) &= dS_{t}(y) \cdot \frac{1}{\gamma(y;t)} \cdot \PP[P_{t}]{R=1}.
+% \end{align*}
+% In addition, Bayes rule also implies that
+% \begin{align*}
+% \EE[S_{t}]{\frac{1}{\gamma(Y;t)}} &= \int_{\mathcal{Y}} \frac{\PP[P_{t}]{Y=y \mid R=1}}{\PP[P_{t}]{R=1 \mid Y=y}} dy \\
+% &= \int \frac{1}{\PP[P_{t}]{R=1}} \cdot dP_{t}(y) \\
+% &= \frac{1}{\PP[P_{t}]{R=1}}.
+% \end{align*}
+% Thus, we have that
+% \begin{equation} \label{eq:ratio} \mu(t) = \EE[S_{t}]{\frac{Y}{\gamma(Y;t)}} \Big/ \EE[S_{t}]{\frac{1}{\gamma(Y;t)}}. \end{equation}
+
+% As a result, it remains to show that right side of \eqref{eq:ratio} is equal to right side \eqref{eq:ratio_2}. The main insight is that the solution to \eqref{eq:loss_min} satisfies
+% \begin{equation} \label{eq:prop_density} \exp(\tilde{\theta}(y)) \propto \frac{1}{\gamma(y;t)} \end{equation}
+% up to a time-dependent scaling factor.
+
+% To demonstrate that the solution to \eqref{eq:loss_min} satisfies this property, we first study a simpler unconstrained minimization problem. Let $\mathcal{S} = L^{2}(F_{Y,T}, \mathcal{Y} \times \mathcal{T})$, the space of square-integrable measurable functions with respect to $F_{Y, T}$. Set $\tilde{L}(s, z) = L(r, a, z)$ for any $(r, a)$ such that $s = r+ a$. We consider the population risk minimization problem 
+% \begin{equation} \label{eq:simple} \min_{s \in \mathcal{S}} \EE[F]{\tilde{L}(s(Y, T), Z)}.\end{equation}
+% We can apply \citet{sugiyama2008direct} to see that the solution to \eqref{eq:simple} is 
+% \begin{equation} \label{eq:density_ratio} s^{*}(y, t) = \log\Big(\frac{dP_{t}(y)}{dS_{t}(y)} \Big). \end{equation}
+
+% Recall that \eqref{eq:loss_min} has a unique solution, which we denote as $(\tilde{\theta}, \tilde{\alpha})$. Under Assumption \ref{assumption:stationary_selection}, we can show that $(\tilde{\theta}, \tilde{\alpha})$ satisfies
+% \begin{equation} \label{eq:decomp} \tilde{\alpha}(t) +  \tilde{\theta}(y) = s^{*}(y, t). \end{equation}
+% Recall that $w(y, y'; t) = \frac{\gamma(y;t)}{\gamma(y'; t)}$ for all $y, y' \in \mathcal{Y}$ and $t \in \mathcal{T}$. Fix $y'$. Under Assumption \ref{assumption:stationary_selection}, the left side does not depend on $t$ and $y'$ is fixed, so $w(y, y'; t) = h(y)$ and $\gamma(y'; t)$ is a constant that depends on $t$, so $\gamma(y'; t) = \lambda_{t}.$ This implies $\gamma(y;t)$ is the product of a time-dependent constant and a function that only depends on $y$, i.e. $\gamma(y;t) = \lambda_{t} \cdot h(y)$. This implies that an analogous decomposition holds for $\frac{1}{\gamma(y; t)}$ as well. Since $\PP[P_{t}]{R=1}$ only depends on $t$, we must have that the log density ratio can be decomposed
+% \[ s^{*}(y, t) = \alpha(t) + \theta(y)\]
+% for some $\alpha \in \mathbb{R}^{m}$ and $\theta \in L^{2}(F_{Y}, \mathcal{Y}).$ Note that $(\theta, \alpha)$ that satisfy the above equation are only identified up to an additive constant. There exists $(\bar{\theta}, \bar{\alpha})$ that satisfies the above equation and satisfies $\bar{\alpha}(m) = 0.$ To see this, suppose $\alpha(m) = c$ for some $c \neq 0$. Then, we can define $\tilde{\alpha}(t) = \alpha(t) - c$ and $\tilde{\theta}(y) = \theta(y) + c$ and note that $\tilde{\alpha}(t) + \tilde{\theta}(y) = s^{*}(y, t).$ We observe that $(\bar{\theta}, \bar{\alpha})$ is in the feasible set of \eqref{eq:loss_min} and satisfies
+% \[ L(\bar{\theta}(y), \bar{\alpha}(t), z) = \tilde{L}(s^{*}(y, t), z) \]
+% for all $(t, y, z).$ This implies that the optimal solution $(\tilde{\theta}, \tilde{\alpha})$ must be equal to $(\bar{\theta}, \bar{\alpha}).$
+
+% \eqref{eq:density_ratio} and \eqref{eq:decomp} imply that
+% \begin{align*}
+% \exp(\tilde{\theta}(y)) &= \exp(- \tilde{\alpha}(t)) \cdot \exp(s^{*}(y, t)) \\
+% &= \exp(- \tilde{\alpha}(t)) \cdot \frac{dP_{t}(y)}{dS_{t}(y)} \\
+% &= \exp(- \tilde{\alpha}(t)) \cdot \frac{\PP[P_{t}]{R=1}}{\gamma(y;t)} \\
+% &= C_{t} \cdot \frac{1}{\gamma(y;t)}.
+% \end{align*}
+% This yields \eqref{eq:prop_density}, which proves the desired result.
+
+% \end{subsubsection}
+
+% \end{subsection}
+
+% \begin{subsection}{Proof of Lemma \ref{lemm:equivalence}}
+% \rs{TODO need to fix because minimization doesnt account for constraint that $\alpha(m) = 0$.}
+% Define $A_{t}(\theta):= \log \EE[S_{t}]{\exp(\theta(Y))}.$ Define a loss function $L_{t}(\theta) := - \EE[P_{t}]{\theta(Y)} +  \log(\EE[S_{t}]{\exp(\theta(Y))})$. Recall that
+% \begin{align*}
+% \EE[F]{L(\theta(Y),\, \alpha(T),\, Z) \mid T=t} &= \frac{1}{2} \Big( -\EE[P_{t}]{\theta(Y)} - \alpha(t) + \EE[S_{t}]{\exp(\theta(Y)+ \alpha(t))} \Big).
+% \end{align*}
+% We can minimize this objective with respect to $\alpha(t)$ to find that the optimal value of $\alpha(t)$ at a fixed $\theta$ is $\alpha^{*}(t; \theta) = - \log(\EE[S_{t}]{\exp(\theta(Y))}).$ At this value of $\alpha(t; \theta)$, we note that
+% \[ \EE[F]{L(\theta(Y),\, \alpha^{*}(T; \theta),\, Z) \mid T=t} = \frac{1}{2}(-\EE[P_{t}]{\theta(Y)} + \log(\EE[S_{t}]{\exp(\theta(Y))}) + 1)= \frac{1}{2} L_{t}(\theta) + \frac{1}{2}.\]
+
+% Since $F_{T}$ corresponds to the uniform distribution, we have that $\EE[F]{L(\theta(Y),\, \alpha(T),\, Z)}$ is proportional to $\EE[F]{L_{T}(\theta)}$, provided that $\alpha(T)= - \log(\EE[S_{T}]{\exp(\theta(Y))})$, its minimizing value.
+
+% In addition, we note that
+% \begin{align*}
+% \text{KL}(P_{t} || S_{t}(\theta)) &= \EE[P_{t}]{\log\Big(\frac{dP_{t}(Y)}{dS_{t}(\theta)(Y)}\Big)} \\
+% &= \EE[P_{t}]{\log\Big(\frac{dP_{t}(Y)}{dS_{t}(Y) \cdot \exp(\theta(Y) - A_{t}(\theta))}\Big)} \\
+% &= \EE[P_{t}]{\log \Big( \frac{dP_{t}(Y)}{dS_{t}(Y)} \Big)} - \EE[P_{t}]{(\theta(Y) - A_{t}(\theta))} \\
+% &= \text{KL}(P_{t} || S_{t}) - \EE[P_{t}]{\theta(Y)} +  \log(\EE[S_{t}]{\exp(\theta(Y))}) \\
+% &= L_{t}(\theta) + C.
+% \end{align*}
+% We note that $\frac{1}{m} \sum_{t=1}^{m} \text{KL}(P_{t} || S_{t}(\theta)) = \EE[F]{\text{KL}(P_{T} || S_{T}(\theta))} = \EE[F]{L_{T}(\theta)} + C$.
+
+% Thus, we have that the objectives in \eqref{eq:kl_min} and \eqref{eq:loss_min} are equal up to additive constants and scaling factors to $\EE[F]{L_{T}(\theta)}$, so any solution to the former is a solution to the later.
+% \end{subsection}
+
+% \end{section}
+
+% \begin{section}{Relationship with DiD}
+
+% \begin{enumerate}
+%   \item Can this model be extended with application to DiD? 
+%   \item Related work: 
+%   \begin{enumerate}
+%     \item \url{https://arxiv.org/abs/2212.13641} - distributional parallel trends is very closely related to stationarity assumption.
+%   \end{enumerate}
+% \end{enumerate}
+
+% \end{section}
+
+
+
+
+
+
+
+
+
+
+\bibliographystyle{plainnat} 
+\bibliography{ref.bib}
+
+\end{document}

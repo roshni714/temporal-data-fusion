@@ -1,0 +1,124 @@
+\documentclass{article}
+
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{natbib}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{fancyvrb}
+\usepackage{enumerate}
+\usepackage{relsize}
+\usepackage{multirow}
+\usepackage{mathrsfs}
+
+\usepackage{hyperref}
+\usepackage[margin=1.4in]{geometry}
+\hypersetup{colorlinks,citecolor=blue,urlcolor=blue,linkcolor=blue}
+\newcommand{\Lihua}[1]{{\color{blue}#1}}
+
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+
+\usepackage{stefan_tex}
+\graphicspath{{./figures/}}
+
+%\numberwithin{equation}{section}
+
+%%%%%%%%% Theorems
+
+\theoremstyle{definition}
+\newtheorem{exam}{Example}
+\newtheorem{defi}{Definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{property}{Property}
+
+ \theoremstyle{plain}
+ \newtheorem{prop}{Proposition}
+ \newtheorem{conj}[prop]{Conjecture}
+ \newtheorem{coro}[prop]{Corollary}
+ \newtheorem{lemm}[prop]{Lemma}
+ \newtheorem{theo}[prop]{Theorem}
+%\theoremstyle{plain}
+%\newtheorem{prop}{Proposition}[section]
+%\newtheorem{coro}{Corollary}[section]
+%\newtheorem{lemm}{Lemma}[section]
+%\newtheorem{theo}{Theorem}[section]
+
+\theoremstyle{remark}
+\newtheorem{comm}{Comment}
+\newtheorem{rema}{Remark}
+
+\author{Roshni Sahoo\\
+  \texttt{r.sahoo@columbia.edu}}
+
+
+\title{Data Fusion with Covariates}
+
+\date{Columbia University}
+
+\begin{document}
+
+\maketitle
+
+
+\begin{section}{Statistical Setup}
+Let $S_{t}, P_{t}$ denote the survey and target population distributions respectively at time-step $t.$ Let $P_{t}$ be a distribution over a covariate $X \in \mathcal{X}$, outcome $Y \in \mathcal{Y}$, and a binary response indicator $R \in \{0, 1\}.$ Let $S_{t}$ be the $X, Y \mid R=1$ marginal of $P_{t}$. We have access to $S_{t}$ for $t=1, \dots M$ and $P_{t}$ for $t=1, \dots m$, where $m < M$. For simplicity, we will assume that the covariate distribution of the survey and population distributions are the same.
+
+We aim to learn a decision rule $h$ that performs well under the target population $P_{t}$ at the current time-step $t=M.$
+\[ \min_{h: \mathcal{X} \rightarrow \mathbb{R}} \EE[P_{t}]{L(h(X), Y)}.\]
+
+We define relative probability of sample selection between two individuals with outcome $y$ and $y'$ at time-step $t$ as 
+\begin{equation} w(x, y, y'; t) = \frac{\PP[P_{t}]{R=1 \mid X=x, Y=y}}{\PP[P_{t}]{R=1 \mid X=x, Y= y'}}.\end{equation}
+
+
+\begin{assumption}[Stationary Selection]
+\label{assumption:stationary_selection}
+The function $w(x, y, y'; t)$ is constant in $t$.
+\end{assumption}
+
+\begin{lemm}
+\label{lemm:equivalence}
+The population and survey conditional distributions are related via a time-invariant exponential tilting, i.e. there exists some $\theta: \mathcal{X} \times \mathcal{Y} \rightarrow \mathbb{R}$ such that
+\[dP_{t, Y \mid X}(y) = dS_{t, Y \mid X}(y) \cdot \exp(\theta(x, y) - A_{t, x}(\theta)),\] 
+where $A_{t, x}(\theta) = \log\Big( \int \exp(\theta(x, y)) \cdot dS_{t, Y \mid X=x}(y) dy\Big)$, if and only if Assumption \ref{assumption:stationary_selection} holds.
+\end{lemm}
+
+This result implies that 
+\[ \EE[P_{t}]{L(h(X), Y)} = \EE[S_{t, X}]{\EE[S_{t, Y\mid X}]{\exp(\theta(X, Y)) \cdot L(h(X), Y) \mid X} \Big/ \EE[S_{t, Y \mid X}]{\exp(\theta(X, Y)) \mid X}}.\]
+\end{section}
+
+
+\begin{section}{Algorithm}
+The time-invariant function that guarantees unbiasedness under stationarity can be learned by leveraging the data from the paired survey and target distributions $S_{t}, P_{t}$ when $t \in [m]$. 
+
+Define a pooled distribution $F$ over paired data from $S_{t}, P_{t}$ for $t=1, 2, \dots m$. Let $T$ be a random variable that denotes the time step and let $Z$ be a pseudolabel that captures whether a sample is drawn from the survey or target population. The distribution $F$ is a distribution over $(X, Y, Z, T)$, where $Z  \sim \text{Bernoulli}(1/2)$ and $T \sim \text{Uniform}([m])$, $F_{X, Y \mid Z=1, T=t} = P_{t}$, and  $F_{X, Y \mid Z= 0, T=t} = S_{t}$. Let $\Theta$ be the space of square-integrable functions with measurable functions with respect to $F_{Y}$, i.e. $\Theta := L^{2}(F_{X, Y}, \mathcal{X} \times \mathcal{Y}).$ Let $\mathcal{A} \subset L^{2}(F_{X, T}, \mathcal{X} \times \mathbb{R})$ with last coordinate equal to zero, i.e. $\mathcal{A} =  \{ \alpha \in \mathbb{R}^{m} \mid \alpha(\cdot, m) = 0\}.$ 
+Define a loss function 
+\begin{equation} L(\theta, a, z) := (1 - z) \cdot \exp(\theta + a) - z \cdot (\theta + a).\end{equation}
+
+Our goal is to obtain $\theta$ from Lemma \ref{lemm:equivalence} such that $\EE[S_{M}]{\theta(X, Y)} = 1$.
+\begin{equation} 
+\label{eq:loss_min}
+\{\tilde{\theta}(\cdot), \tilde{\alpha}(\cdot)\} \in \arg\min_{(\theta, \alpha) \in \Theta \times \mathcal{A}} \{\EE[F]{L(\theta(X, Y),\, \alpha(X, T),\, Z)}: \alpha(\cdot, m) = 0\}.\end{equation}
+
+Implementation
+\begin{enumerate}
+  \item Enforce the normalization constraint post-hoc. First, solve
+  \[\{\tilde{\theta}(\cdot), \tilde{\alpha}(\cdot)\} \in \arg\min_{(\theta, \alpha) \in \Theta \times \mathcal{A}} \{\EE[F]{L(\theta(X, Y),\, \alpha(X, T),\, Z)}: \alpha(\cdot; m) = 0\}.\]
+  Note that the normalization constraint does not depend on $S_{M}$. Second, given samples $(X, Y) \sim S_{M}$ and define $\tilde{Y} = \exp(\theta(X, Y)).$
+  \[  c \in \arg\min_{c: \mathcal{X} \rightarrow \mathbb{R}}\EE[S_{M}]{(\tilde{Y} - c(X))^{2}}.\]
+  Third, define
+  \[ \theta(x, y) := \tilde{\theta}(x, y) - c(x).\]
+\end{enumerate}
+
+\begin{equation} 
+\EE[P_{t}]{L(h(X), Y)} = \EE[S_{t}]{\exp(\tilde{\theta}(X, Y)) \cdot L(h(X), Y)}.
+\end{equation}
+\end{section}
+
+
+\end{document}

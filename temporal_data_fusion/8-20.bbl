@@ -1,0 +1,82 @@
+\begin{thebibliography}{11}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Aiken et~al.(2023)Aiken, Ohlenburg, and Blumenstock]{aiken2023moving}
+Emily Aiken, Tim Ohlenburg, and Joshua Blumenstock.
+\newblock Moving targets: When does a poverty prediction model need to be
+  updated?
+\newblock In \emph{NeurIPS 2023 Computational Sustainability: Promises and
+  Pitfalls from Theory to Deployment}, 2023.
+
+\bibitem[Bickel et~al.(2009)Bickel, Br{\"u}ckner, and
+  Scheffer]{bickel2009discriminative}
+Steffen Bickel, Michael Br{\"u}ckner, and Tobias Scheffer.
+\newblock Discriminative learning under covariate shift.
+\newblock \emph{Journal of Machine Learning Research}, 10\penalty0 (9), 2009.
+
+\bibitem[Cox(1972)]{cox1972regression}
+David~R Cox.
+\newblock Regression models and life-tables.
+\newblock \emph{Journal of the royal statistical society: Series B
+  (methodological)}, 34\penalty0 (2):\penalty0 187--202, 1972.
+
+\bibitem[Franks et~al.(2020)Franks, Airoldi, and Rubin]{franks2020nonstandard}
+Alexander~M Franks, Edoardo~M Airoldi, and Donald~B Rubin.
+\newblock Nonstandard conditionally specified models for nonignorable missing
+  data.
+\newblock \emph{Proceedings of the National Academy of Sciences}, 117\penalty0
+  (32):\penalty0 19045--19053, 2020.
+
+\bibitem[Guan et~al.(2025)Guan, Sahoo, Salomon, Wager, and
+  Reitsma]{guan2025data}
+Amy Guan, Roshni Sahoo, Joshua Salomon, Stefan Wager, and Marissa Reitsma.
+\newblock Data fusion for high-resolution estimation.
+\newblock \emph{arXiv preprint arXiv:2508.14858}, 2025.
+
+\bibitem[Kim and Yu(2011)]{kim2011semiparametric}
+Jae~Kwang Kim and Cindy~Long Yu.
+\newblock A semiparametric estimation of mean functionals with nonignorable
+  missing data.
+\newblock \emph{Journal of the American Statistical Association}, 106\penalty0
+  (493):\penalty0 157--165, 2011.
+
+\bibitem[Magder(2003)]{magder2003simple}
+Laurence~S Magder.
+\newblock Simple approaches to assess the possible impact of missing outcome
+  information on estimates of risk ratios, odds ratios, and risk differences.
+\newblock \emph{Controlled clinical trials}, 24\penalty0 (4):\penalty0
+  411--421, 2003.
+
+\bibitem[Menon and Ong(2016)]{menon2016linking}
+Aditya Menon and Cheng~Soon Ong.
+\newblock Linking losses for density ratio and class-probability estimation.
+\newblock In \emph{International Conference on Machine Learning}, pages
+  304--313. PMLR, 2016.
+
+\bibitem[Miao et~al.(2025)Miao, Li, Zhang, and Sun]{miao2025stableness}
+Wang Miao, Xinyu Li, Ping Zhang, and Baoluo Sun.
+\newblock A stableness of resistance model for nonresponse adjustment with
+  callback data.
+\newblock \emph{Journal of the Royal Statistical Society Series B: Statistical
+  Methodology}, 87\penalty0 (2):\penalty0 433--456, 2025.
+
+\bibitem[Sugiyama et~al.(2008)Sugiyama, Suzuki, Nakajima, Kashima,
+  Von~B{\"u}nau, and Kawanabe]{sugiyama2008direct}
+Masashi Sugiyama, Taiji Suzuki, Shinichi Nakajima, Hisashi Kashima, Paul
+  Von~B{\"u}nau, and Motoaki Kawanabe.
+\newblock Direct importance estimation for covariate shift adaptation.
+\newblock \emph{Annals of the Institute of Statistical Mathematics},
+  60:\penalty0 699--746, 2008.
+
+\bibitem[Uehara et~al.(2023)Uehara, Lee, and Kim]{uehara2023statistical}
+Masatoshi Uehara, Danhyang Lee, and Jae-Kwang Kim.
+\newblock Statistical inference with semiparametric nonignorable nonresponse
+  models.
+\newblock \emph{Scandinavian Journal of Statistics}, 50\penalty0 (4):\penalty0
+  1795--1817, 2023.
+
+\end{thebibliography}

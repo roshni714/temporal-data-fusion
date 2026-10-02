@@ -1,0 +1,14 @@
+\begin{thebibliography}{1}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Lipton et~al.(2018)Lipton, Wang, and Smola]{lipton2018detecting}
+Zachary Lipton, Yu-Xiang Wang, and Alexander Smola.
+\newblock Detecting and correcting for label shift with black box predictors.
+\newblock In \emph{International conference on machine learning}, pages
+  3122--3130. PMLR, 2018.
+
+\end{thebibliography}

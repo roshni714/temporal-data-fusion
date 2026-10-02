@@ -1,0 +1,52 @@
+This is BibTeX, Version 0.99d (TeX Live 2025)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: 8-20.aux
+The style file: plainnat.bst
+Database file #1: ref.bib
+Repeated entry---line 300 of file ref.bib
+ : @inproceedings{menon2016linking
+ :                                ,
+I'm skipping whatever remains of this entry
+Warning--I didn't find a database entry for ""
+You've used 11 entries,
+            2773 wiz_defined-function locations,
+            671 strings with 7168 characters,
+and the built_in function-call counts, 5508 in all, are:
+= -- 492
+> -- 326
+< -- 5
++ -- 110
+- -- 99
+* -- 471
+:= -- 843
+add.period$ -- 34
+call.type$ -- 11
+change.case$ -- 66
+chr.to.int$ -- 11
+cite$ -- 22
+duplicate$ -- 240
+empty$ -- 447
+format.name$ -- 114
+if$ -- 1144
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 11
+newline$ -- 63
+num.names$ -- 44
+pop$ -- 125
+preamble$ -- 1
+purify$ -- 55
+quote$ -- 0
+skip$ -- 182
+stack$ -- 0
+substring$ -- 247
+swap$ -- 22
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 121
+warning$ -- 0
+while$ -- 50
+width$ -- 0
+write$ -- 149
+(There was 1 error message)

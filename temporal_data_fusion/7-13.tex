@@ -1,0 +1,131 @@
+\documentclass{article}
+
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{natbib}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{fancyvrb}
+\usepackage{enumerate}
+\usepackage{relsize}
+\usepackage{multirow}
+\usepackage{mathrsfs}
+
+\usepackage{hyperref}
+\usepackage[margin=1.4in]{geometry}
+\hypersetup{colorlinks,citecolor=blue,urlcolor=blue,linkcolor=blue}
+\newcommand{\Lihua}[1]{{\color{blue}#1}}
+
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+
+\usepackage{stefan_tex}
+\graphicspath{{./figures/}}
+
+%\numberwithin{equation}{section}
+
+%%%%%%%%% Theorems
+
+\theoremstyle{definition}
+\newtheorem{exam}{Example}
+\newtheorem{defi}{Definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{property}{Property}
+
+ \theoremstyle{plain}
+ \newtheorem{prop}{Proposition}
+ \newtheorem{conj}[prop]{Conjecture}
+ \newtheorem{coro}[prop]{Corollary}
+ \newtheorem{lemm}[prop]{Lemma}
+ \newtheorem{theo}[prop]{Theorem}
+%\theoremstyle{plain}
+%\newtheorem{prop}{Proposition}[section]
+%\newtheorem{coro}{Corollary}[section]
+%\newtheorem{lemm}{Lemma}[section]
+%\newtheorem{theo}{Theorem}[section]
+
+\theoremstyle{remark}
+\newtheorem{comm}{Comment}
+\newtheorem{rema}{Remark}
+
+\author{Roshni Sahoo\\
+  \texttt{r.sahoo@columbia.edu}}
+
+
+\title{Density Ratio Estimation as Supervised Learning}
+
+\date{Columbia University}
+
+\begin{document}
+
+\maketitle
+
+
+\begin{section}{Introduction}
+
+Density ratio estimation is a fundamental problem in causal inference and learning under distribution shift. The most common approach to density ratio estimation is probabilistic classification \citep{menon2016linking,sugiyama2008direct}. In probabilistic classification, we observe i.i.d. samples $X \sim P$ and $X \sim Q$. We provide pseudolabel $Y=1$ to samples drawn from $Q$ and pseudolabel $Y=0$ to samples drawn from $P$. Let $F$ denote the joint mixture distribution over $(X, Y)$ with these labels. Then, we fit a classifier $h(x) = \PP[]{Y=1 \mid X}$. By Bayes' rule, we can show that the density ratio $r(x) := \frac{dQ_{X}(x)}{dP_{X}(x)}$ is given by
+\[ r(x) = \frac{h(x)}{1 - h(x)}.\]
+The problem with this approach to density ratio estimation is that it can become unstable when classification probabilities approach $1$. Suppose that the classifier is estimated with some error $\hat{h}(x)$. Let $\delta(x) := \hat{h}(x) - h(x)$. We can compute the error in $r(x)$ that arises from the classifier error:
+\begin{align*} 
+|\hat{r}(x) - r(x)| &=  \Bigg| \frac{\hat{h}(x)}{1 - \hat{h}(x)} - \frac{h(x)}{1 - h(x)} \Bigg| \\
+&= \Bigg| \frac{\delta(x) \cdot (1 + r(x))^{2}}{ 1 - \delta(x) \cdot ( 1 + r(x) ) } \Bigg|.
+\end{align*}
+Rather than estimate the classifier and then form the density ratio, we propose to directly estimate the density ratio by solving a loss minimization problem
+\begin{equation}
+\label{eq:direct_dre}
+\min_{r: \mathcal{X} \rightarrow \mathbb{R}} \EE[F]{L_{\psi}(r(X), Y)}.
+\end{equation}
+Define $\psi:(0, \infty) \rightarrow\mathbb{R}$. Define $\phi(r) = \int_{0}^{r} t\psi'(t)dt.$ More broadly, we can consider the family of loss functions given below.
+\begin{equation} 
+\label{eq:loss}
+L_{\psi}(r, y) = \phi(r) \cdot (1 - y) - \psi(r) \cdot y. \end{equation}
+
+\begin{assumption}
+\label{assumption:psi}
+The function $\psi$ is twice-continuously differentiable, strictly increasing, concave, and has the property that $\psi'(r) + r\psi''(r) \geq 0.$
+\end{assumption}
+
+\begin{lemm}
+Let $X_{i} \sim P$ denote i.i.d. samples from $P$ and $X_{j} \sim Q$ denote i.i.d. samples from $Q$. Pseudolabel the samples from $P$ by $Y_{i} = 0$ and pseudolabel the samples from $Q$ by $Y_{i}=1$ . The loss function $L_{\psi}$ given in \eqref{eq:loss} is convex in $r$. In addition, \eqref{eq:direct_dre} is strictly convex and has a unique minimizer at the true density ratio $r(x) = \frac{dQ_{X}(x)}{dP_{X}(x)}.$
+\end{lemm}
+
+\begin{proof}
+We note that
+\begin{align*}
+L_{\psi}'(r, y) &= \phi'(r) \cdot (1 - y) - \psi'(r) \cdot y \\
+&= r \psi'(r) \cdot (1 - y) - \psi'(r) \cdot y.
+\end{align*}
+
+In addition, we have that
+\begin{align*}
+L_{\psi}''(r, y) &= \phi''(r) \cdot (1 - y) - \psi''(r) \cdot y \\
+&= (r\psi''(r) + \psi'(r)) \cdot (1 - y) - \psi''(r) \cdot y
+\end{align*}
+
+Since $\psi$ is concave, we have that $L_{\psi}''(r, 1) \geq 0$. Since $r\psi''(r) + \psi'(r) \geq 0$, we have that $L_{\psi}''(r, 0) \geq 0$. Thus, $L_{\psi}$ is convex in $r$.
+
+We show that the unique population minimizer occurs at $r(x) = \frac{dQ_{X}(x)}{dP_{X}(x)}$. We have that the first-order condition of the population risk is given by 
+\begin{align*}
+\nabla_{r(x)} \EE[]{L_{\psi}(r(X), Y) \mid X=x} &= r(x) \cdot \psi'(r(x)) \cdot \PP[]{Y=0 \mid X=x} - \psi'(r(x)) \cdot \PP[]{Y=1 \mid X=x} \\
+&= \psi'(r(x))  \cdot (r(x) \cdot \PP[]{Y=0 \mid X=x} - \PP[]{Y=1 \mid X=x}).
+\end{align*}
+Since $\psi$ is strictly increasing, $\psi'(r) > 0$, so the unique stationary point of the population risk is 
+\begin{align*}
+r(x) &= \frac{\PP[]{Y=1 \mid X=x}}{\PP[]{Y=0 \mid X=x}} =\frac{\PP[]{X=x \mid Y=1}}{\PP[]{X=x \mid Y= 0}} = \frac{dQ_{X}(x)}{dP_{X}(x)},\\
+\end{align*}
+where the last equalities follow by Bayes' rule.
+
+\end{proof}
+
+\end{section}
+
+
+\bibliographystyle{plainnat} 
+\bibliography{ref.bib}
+
+\end{document}
